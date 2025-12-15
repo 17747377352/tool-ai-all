@@ -1,0 +1,15 @@
+{
+    "version": "0.0.1",
+    "configurations": [
+        {
+            "type": "uni-app",
+            "request": "launch",
+            "name": "运行到微信小程序",
+            "target": "mp-weixin"
+        }
+    ]
+}
+
+
+
+

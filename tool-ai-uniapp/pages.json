@@ -1,0 +1,81 @@
+{
+    "easycom": {
+        "autoscan": true,
+        "custom": {
+            "^u-(.*)": "uview-ui/components/u-$1/u-$1.vue"
+        }
+    },
+    "pages": [
+        {
+            "path": "pages/index/index",
+            "style": {
+                "navigationBarTitleText": "AI工具箱",
+                "navigationBarBackgroundColor": "#ffffff",
+                "navigationBarTextStyle": "black"
+            }
+        },
+        {
+            "path": "pages/remove-logo/remove-logo",
+            "style": {
+                "navigationBarTitleText": "去水印",
+                "navigationBarBackgroundColor": "#ffffff",
+                "navigationBarTextStyle": "black"
+            }
+        },
+        {
+            "path": "pages/ai-avatar/ai-avatar",
+            "style": {
+                "navigationBarTitleText": "AI头像",
+                "navigationBarBackgroundColor": "#ffffff",
+                "navigationBarTextStyle": "black"
+            }
+        },
+        {
+            "path": "pages/name-sign/name-sign",
+            "style": {
+                "navigationBarTitleText": "姓氏签名",
+                "navigationBarBackgroundColor": "#ffffff",
+                "navigationBarTextStyle": "black"
+            }
+        },
+        {
+            "path": "pages/fortune/fortune",
+            "style": {
+                "navigationBarTitleText": "运势测试",
+                "navigationBarBackgroundColor": "#ffffff",
+                "navigationBarTextStyle": "black"
+            }
+        },
+        {
+            "path": "pages/constellation/constellation",
+            "style": {
+                "navigationBarTitleText": "今日星座运势",
+                "navigationBarBackgroundColor": "#ffffff",
+                "navigationBarTextStyle": "black"
+            }
+        },
+        {
+            "path": "pages/result/result",
+            "style": {
+                "navigationBarTitleText": "生成结果",
+                "navigationBarBackgroundColor": "#ffffff",
+                "navigationBarTextStyle": "black"
+            }
+        },
+        {
+            "path": "pages/user/user",
+            "style": {
+                "navigationBarTitleText": "我的",
+                "navigationBarBackgroundColor": "#ffffff",
+                "navigationBarTextStyle": "black"
+            }
+        }
+    ],
+    "globalStyle": {
+        "navigationBarTextStyle": "black",
+        "navigationBarTitleText": "AI工具箱",
+        "navigationBarBackgroundColor": "#ffffff",
+        "backgroundColor": "#f5f5f5"
+    }
+}
+

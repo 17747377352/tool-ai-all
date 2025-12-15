@@ -1,0 +1,19 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/remove-logo/remove-logo",
+    "pages/ai-avatar/ai-avatar",
+    "pages/name-sign/name-sign",
+    "pages/fortune/fortune",
+    "pages/constellation/constellation",
+    "pages/result/result",
+    "pages/user/user"
+  ],
+  "window": {
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "AI工具箱",
+    "navigationBarBackgroundColor": "#ffffff",
+    "backgroundColor": "#f5f5f5"
+  },
+  "usingComponents": {}
+}

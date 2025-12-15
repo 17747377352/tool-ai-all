@@ -1,0 +1,76 @@
+
+.container.data-v-e8f14bc4 {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 40rpx 30rpx;
+}
+.header.data-v-e8f14bc4 {
+    text-align: center;
+    margin-bottom: 50rpx;
+}
+.title.data-v-e8f14bc4 {
+    display: block;
+    font-size: 40rpx;
+    font-weight: bold;
+    color: #fff;
+    margin-bottom: 15rpx;
+}
+.subtitle.data-v-e8f14bc4 {
+    display: block;
+    font-size: 26rpx;
+    color: rgba(255, 255, 255, 0.8);
+}
+.constellation-grid.data-v-e8f14bc4 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20rpx;
+    margin-bottom: 100rpx;
+}
+.constellation-item.data-v-e8f14bc4 {
+    background: #fff;
+    border-radius: 20rpx;
+    padding: 30rpx 20rpx;
+    text-align: center;
+    box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s;
+}
+.constellation-item.data-v-e8f14bc4:active {
+    transform: scale(0.95);
+}
+.constellation-item.generating.data-v-e8f14bc4 {
+    opacity: 0.6;
+    pointer-events: none;
+}
+.constellation-icon.data-v-e8f14bc4 {
+    width: 80rpx;
+    height: 80rpx;
+    margin: 0 auto 15rpx;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 50%;
+    position: relative;
+}
+.icon-text.data-v-e8f14bc4 {
+    font-size: 40rpx;
+    color: #fff;
+    line-height: 1;
+    text-align: center;
+    display: inline-block;
+    vertical-align: middle;
+    margin: 0;
+    padding: 0;
+}
+.constellation-name.data-v-e8f14bc4 {
+    display: block;
+    font-size: 28rpx;
+    color: #333;
+    font-weight: 500;
+    margin-bottom: 8rpx;
+}
+.constellation-date.data-v-e8f14bc4 {
+    display: block;
+    font-size: 22rpx;
+    color: #999;
+}

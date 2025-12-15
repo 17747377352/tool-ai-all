@@ -1,0 +1,8 @@
+{
+  "navigationBarTitleText": "姓氏签名",
+  "navigationBarBackgroundColor": "#ffffff",
+  "navigationBarTextStyle": "black",
+  "usingComponents": {
+    "ad-video-banner": "../../common/components/ad-video-banner"
+  }
+}

@@ -1,0 +1,63 @@
+
+.container.data-v-1cf27b2a {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 40rpx 30rpx;
+}
+.header.data-v-1cf27b2a {
+    text-align: center;
+    margin-bottom: 60rpx;
+}
+.title.data-v-1cf27b2a {
+    display: block;
+    font-size: 48rpx;
+    font-weight: bold;
+    color: #fff;
+    margin-bottom: 20rpx;
+}
+.subtitle.data-v-1cf27b2a {
+    display: block;
+    font-size: 28rpx;
+    color: rgba(255, 255, 255, 0.8);
+}
+.tool-grid.data-v-1cf27b2a {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 30rpx;
+    margin-bottom: 100rpx;
+}
+
+/* 如果有5个工具，可以改为3列布局 */
+/* .tool-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20rpx;
+    margin-bottom: 100rpx;
+} */
+.tool-item.data-v-1cf27b2a {
+    background: #fff;
+    border-radius: 20rpx;
+    padding: 40rpx 20rpx;
+    text-align: center;
+    box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s;
+}
+.tool-item.data-v-1cf27b2a:active {
+    transform: scale(0.95);
+}
+.tool-icon-placeholder.data-v-1cf27b2a {
+    width: 100rpx;
+    height: 100rpx;
+    margin: 0 auto 20rpx;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 60rpx;
+    line-height: 1;
+}
+.tool-name.data-v-1cf27b2a {
+    display: block;
+    font-size: 32rpx;
+    color: #333;
+    font-weight: 500;
+}
