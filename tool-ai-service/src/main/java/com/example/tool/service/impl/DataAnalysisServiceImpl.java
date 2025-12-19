@@ -76,11 +76,42 @@ public class DataAnalysisServiceImpl implements DataAnalysisService {
             requestBody.put("format", "json");
 
             // 发送POST请求
-            HttpResponse httpResponse = HttpRequest.post(apiUrl)
-                    .header("Content-Type", "application/json")
-                    .body(requestBody.toJSONString())
-                    .timeout(30000) // 30秒超时
-                    .execute();
+            // 视频处理可能需要较长时间，设置超时为120秒
+            // 添加重试机制，最多重试2次
+            HttpResponse httpResponse = null;
+            Exception lastException = null;
+            int maxRetries = 2;
+            
+            for (int i = 0; i <= maxRetries; i++) {
+                try {
+                    if (i > 0) {
+                        log.warn("dataAnalysis API调用失败，第{}次重试: {}, shareUrl: {}", i, apiUrl, shareUrl);
+                        Thread.sleep(1000); // 重试前等待1秒
+                    }
+                    
+                    httpResponse = HttpRequest.post(apiUrl)
+                            .header("Content-Type", "application/json")
+                            .body(requestBody.toJSONString())
+                            .timeout(120000) // 120秒超时（视频处理需要较长时间）
+                            .execute();
+                    
+                    // 如果成功，跳出重试循环
+                    break;
+                } catch (Exception e) {
+                    lastException = e;
+                    log.warn("dataAnalysis API调用异常（尝试 {}/{}）: {}, error: {}", 
+                            i + 1, maxRetries + 1, apiUrl, e.getMessage());
+                    if (i == maxRetries) {
+                        // 最后一次重试也失败，抛出异常
+                        throw e;
+                    }
+                }
+            }
+            
+            if (httpResponse == null) {
+                throw new BusinessException(ResultCode.ERROR, "dataAnalysis服务调用失败: " + 
+                        (lastException != null ? lastException.getMessage() : "未知错误"));
+            }
 
             int statusCode = httpResponse.getStatus();
             String responseBody = httpResponse.body();
