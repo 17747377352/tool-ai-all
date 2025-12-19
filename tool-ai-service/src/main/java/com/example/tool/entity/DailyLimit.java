@@ -22,5 +22,6 @@ public class DailyLimit {
     private Integer nameSignCount; // 姓氏签名次数
     private Integer fortuneCount; // 运势测试次数
     private Integer constellationCount; // 星座运势次数
+    private Integer restorePhotoCount; // 老照片修复次数
 }
 

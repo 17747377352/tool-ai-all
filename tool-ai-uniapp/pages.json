@@ -63,6 +63,22 @@
             }
         },
         {
+            "path": "pages/old-photo/old-photo",
+            "style": {
+                "navigationBarTitleText": "老照片修复",
+                "navigationBarBackgroundColor": "#ffffff",
+                "navigationBarTextStyle": "black"
+            }
+        },
+        {
+            "path": "pages/life/life",
+            "style": {
+                "navigationBarTitleText": "生活查询",
+                "navigationBarBackgroundColor": "#ffffff",
+                "navigationBarTextStyle": "black"
+            }
+        },
+        {
             "path": "pages/user/user",
             "style": {
                 "navigationBarTitleText": "我的",

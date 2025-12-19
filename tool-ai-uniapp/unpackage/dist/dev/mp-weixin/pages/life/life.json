@@ -1,0 +1,8 @@
+{
+  "navigationBarTitleText": "生活查询",
+  "navigationBarBackgroundColor": "#ffffff",
+  "navigationBarTextStyle": "black",
+  "usingComponents": {
+    "ad-video-banner": "../../common/components/ad-video-banner"
+  }
+}

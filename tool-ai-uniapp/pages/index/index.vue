@@ -14,7 +14,7 @@
                 <view class="tool-icon-placeholder">🎨</view>
                 <text class="tool-name">AI头像</text>
             </view>
-            <view class="tool-item" @click="navigateToTool('name-sign')">
+            <view class="tool-item" v-if="false" @click="navigateToTool('name-sign')">
                 <view class="tool-icon-placeholder">✍️</view>
                 <text class="tool-name">姓氏签名</text>
             </view>
@@ -25,6 +25,14 @@
             <view class="tool-item" @click="navigateToTool('constellation')">
                 <view class="tool-icon-placeholder">⭐</view>
                 <text class="tool-name">星座运势</text>
+            </view>
+            <view class="tool-item" @click="navigateToTool('old-photo')">
+                <view class="tool-icon-placeholder">📸</view>
+                <text class="tool-name">老照片修复</text>
+            </view>
+            <view class="tool-item" @click="navigateToTool('life')">
+                <view class="tool-icon-placeholder">🧭</view>
+                <text class="tool-name">生活查询</text>
             </view>
         </view>
 
@@ -95,7 +103,9 @@ export default {
                 'ai-avatar': '/pages/ai-avatar/ai-avatar',
                 'name-sign': '/pages/name-sign/name-sign',
                 'fortune': '/pages/fortune/fortune',
-                'constellation': '/pages/constellation/constellation'
+                'constellation': '/pages/constellation/constellation',
+                'old-photo': '/pages/old-photo/old-photo',
+                'life': '/pages/life/life'
             };
             uni.navigateTo({
                 url: pages[toolName]
@@ -133,18 +143,10 @@ export default {
 
 .tool-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 30rpx;
-    margin-bottom: 100rpx;
-}
-
-/* 如果有5个工具，可以改为3列布局 */
-/* .tool-grid {
-    display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 20rpx;
     margin-bottom: 100rpx;
-} */
+}
 
 .tool-item {
     background: #fff;

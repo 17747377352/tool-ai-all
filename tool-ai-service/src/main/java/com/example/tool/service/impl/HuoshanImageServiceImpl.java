@@ -4,6 +4,7 @@ import com.example.tool.context.HuoshanProperties;
 import com.example.tool.exception.BusinessException;
 import com.example.tool.result.ResultCode;
 import com.example.tool.service.HuoshanImageService;
+import com.example.tool.service.LocalFileService;
 import com.volcengine.ark.runtime.model.images.generation.GenerateImagesRequest;
 import com.volcengine.ark.runtime.model.images.generation.ImagesResponse;
 import com.volcengine.ark.runtime.model.images.generation.ResponseFormat;
@@ -31,7 +32,7 @@ import java.util.concurrent.TimeUnit;
 public class HuoshanImageServiceImpl implements HuoshanImageService {
 
     private final HuoshanProperties huoshanProperties;
-    private final com.example.tool.service.OssService ossService;
+    private final LocalFileService localFileService;
 
     private ArkService arkService;
 
@@ -72,8 +73,8 @@ public class HuoshanImageServiceImpl implements HuoshanImageService {
     @Override
     public String generateFortuneImage(String fortuneText, String name, String birthDate) {
         try {
-            // 构建prompt，将运势文案转换为图片描述
-            String prompt = buildFortunePrompt(fortuneText, name, birthDate);
+            // 构建prompt，将运势信息转换为视觉描述，不再传递文字文案
+            String prompt = buildFortunePrompt(name, birthDate);
 
             GenerateImagesRequest generateRequest = GenerateImagesRequest.builder()
                     .model("doubao-seedream-4-0-250828")
@@ -91,11 +92,34 @@ public class HuoshanImageServiceImpl implements HuoshanImageService {
                 throw new BusinessException(ResultCode.ERROR, "火山引擎图片生成失败：响应为空");
             }
 
-            String imageUrl = imagesResponse.getData().get(0).getUrl();
-            log.info("火山引擎运势图片生成成功: name={}, birthDate={}, url={}", name, birthDate, imageUrl);
+            String volcanoImageUrl = imagesResponse.getData().get(0).getUrl();
+            log.info("火山引擎运势图片生成成功: name={}, birthDate={}, volcanoUrl={}", name, birthDate, volcanoImageUrl);
+
+            // 下载火山引擎的图片
+            cn.hutool.http.HttpResponse httpResponse = cn.hutool.http.HttpRequest.get(volcanoImageUrl)
+                    .timeout(30000)
+                    .execute();
+
+            if (httpResponse.getStatus() != 200) {
+                throw new BusinessException(ResultCode.ERROR, "下载火山引擎图片失败，状态码: " + httpResponse.getStatus());
+            }
+
+            byte[] imageBytes = httpResponse.bodyBytes();
+            if (imageBytes == null || imageBytes.length == 0) {
+                throw new BusinessException(ResultCode.ERROR, "下载的图片数据为空");
+            }
+
+            // 生成本地文件名
+            String fileName = "fortune/" +
+                    java.time.LocalDate.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMdd")) +
+                    "/" + java.util.UUID.randomUUID().toString() + ".jpeg";
+
+            // 上传到本地存储
+            String localUrl = localFileService.uploadFile(imageBytes, fileName, "image/jpeg");
+            log.info("今日运势图片已保存到本地: name={}, localUrl={}", name, localUrl);
 
             // ⭐ 返回IMAGE_LIST格式，与星座运势和去水印保持一致
-            String imageListResult = String.format("IMAGE_LIST:[\"%s\"]", imageUrl);
+            String imageListResult = String.format("IMAGE_LIST:[\"%s\"]", localUrl);
             log.info("返回IMAGE_LIST格式: name={}, result={}", name, imageListResult);
 
             return imageListResult;
@@ -156,18 +180,18 @@ public class HuoshanImageServiceImpl implements HuoshanImageService {
                 throw new BusinessException(ResultCode.ERROR, "下载的图片数据为空");
             }
 
-            // 生成OSS文件名
+            // 生成本地文件名
             String fileName = "constellation-fortune/" +
                     java.time.LocalDate.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMdd")) +
                     "/" + java.util.UUID.randomUUID().toString() + ".jpeg";
 
-            // 上传到OSS
-            String ossUrl = ossService.uploadFile(imageBytes, fileName, "image/jpeg");
-            log.info("星座运势图片已上传到OSS: constellation={}, ossUrl={}", constellation, ossUrl);
+            // 上传到本地存储
+            String localUrl = localFileService.uploadFile(imageBytes, fileName, "image/jpeg");
+            log.info("星座运势图片已保存到本地: constellation={}, localUrl={}", constellation, localUrl);
 
             // ⭐ 返回IMAGE_LIST格式，与去水印保持一致
             // 这样前端可以复用相同的显示逻辑（swiper）
-            String imageListResult = String.format("IMAGE_LIST:[\"%s\"]", ossUrl);
+            String imageListResult = String.format("IMAGE_LIST:[\"%s\"]", localUrl);
             log.info("返回IMAGE_LIST格式: constellation={}, result={}", constellation, imageListResult);
 
             return imageListResult;
@@ -214,18 +238,17 @@ public class HuoshanImageServiceImpl implements HuoshanImageService {
      * 构建运势图片的prompt
      * 将运势文案转换为适合文生图的描述
      */
-    private String buildFortunePrompt(String fortuneText, String name, String birthDate) {
-        // 提取运势文案的关键信息，构建图片描述
+    private String buildFortunePrompt(String name, String birthDate) {
+        // 构建“仿古黄历条”视觉风格的Prompt
         StringBuilder prompt = new StringBuilder();
-        prompt.append("一张精美的运势测试卡片，");
-        prompt.append("主题：").append(name).append("的运势报告，");
-        prompt.append("出生日期：").append(birthDate).append("，");
-        prompt.append("卡片风格：优雅、神秘、温馨，");
-        prompt.append("背景：渐变色彩，柔和的光影效果，");
-        prompt.append("包含运势内容：").append(fortuneText.substring(0, Math.min(200, fortuneText.length()))).append("，");
-        prompt.append("设计风格：现代简约，艺术感强，");
-        prompt.append("色彩：温暖色调，金色、紫色、蓝色渐变，");
-        prompt.append("质感：精致、高端、专业");
+        prompt.append("一张极致简约的仿古中式黄历条插画，竖幅长条比例（2:3或更窄），");
+        prompt.append("背景主体：一张具有沉淀感、纹理清晰的朱砂红底红纸，");
+        prompt.append("核心元素：画面中央垂直排列着墨色笔触的中文字体，呈现出传统木刻版画的活字印刷质感，");
+        prompt.append("文字内容感：体现'").append(name).append("的今日运势'这一主题意象，");
+        prompt.append("细节：纸张边缘有自然的手工撕裂感或宣纸毛边，黑色焦墨干枯笔触，");
+        prompt.append("整体风格：极简主义，传统工艺美学，大量留白，营造禅意与平和感，");
+        prompt.append("不含任何现代UI元素，不含公历农历等杂乱小字，只有大气的木刻文字意向，");
+        prompt.append("画质：电影级细腻纹理，高对比度。");
         return prompt.toString();
     }
 
@@ -234,54 +257,19 @@ public class HuoshanImageServiceImpl implements HuoshanImageService {
      * 基于专业设计模板：正反面双卡片设计，深空主题，精美视觉效果
      */
     private String buildConstellationPrompt(String fortuneText, String constellation) {
-        StringBuilder prompt = new StringBuilder();
+        // 过多的细节会触发火山生成失败，这里改为单面简洁卡片描述
+        String shortText = fortuneText.length() > 80 ? fortuneText.substring(0, 80) + "..." : fortuneText;
 
-        // === 正面设计（主卡片） ===
-        prompt.append("一张精美的星座运势卡片，双面设计，标准卡片比例2:3（600×900px），");
-
-        // 背景层设计
-        prompt.append("正面背景：深空蓝紫渐变（#1a1a3e到#2d1b69），");
-        prompt.append("细腻的星空纹理点缀微光星星，");
-        prompt.append("淡淡的星座连线图案装饰，");
-
-        // 顶部区域
-        prompt.append("顶部区域：精美的金色星座图标").append(constellation).append("，");
-        prompt.append("优雅英文字体配中文星座名称，");
-        prompt.append("小字号金色日期范围文字，");
-
-        // 中央核心区域
-        prompt.append("中央核心：5颗星评级系统，");
-        prompt.append("关键运势词：爱情、事业、财运、健康配图标星级，");
-        prompt.append("幸运元素：幸运数字、幸运颜色、速配星座，");
-
-        // 底部区域
-        prompt.append("底部：富有诗意的运势概述文字，");
-        prompt.append("日期标识为今天日期，");
-
-        // === 视觉元素细节 ===
-        // 配色方案
-        prompt.append("配色方案：主背景深空渐变，");
-        prompt.append("金色(#ffd700)辅助色，纯白(#ffffff)文字，");
-        prompt.append("淡紫(#e6e6fa)和天蓝(#87ceeb)点缀，");
-
-        // 字体与图案
-        prompt.append("标题用优雅衬线体，正文用简洁无衬线体。");
-
-        // === 背面设计（详细运势） ===
-        prompt.append("背面设计：详细运势分析展示，");
-        prompt.append("爱情运势、事业运势、财运运势、健康运势各配星级，");
-        prompt.append("今日宜做事项和需注意方面，");
-        prompt.append("贵人方位指示，");
-
-        // 整体设计风格
-        prompt.append("设计风格：现代简约，艺术感强，精致高端专业，");
-        prompt.append("整体质感：300dpi印刷质量，细腻渐变，微妙光晕效果，");
-
-        // 运势内容融入
-        String shortText = fortuneText.length() > 100 ? fortuneText.substring(0, 100) + "..." : fortuneText;
-        prompt.append("运势内容概要：").append(shortText);
-
-        return prompt.toString();
+        return new StringBuilder()
+                .append("高清、简洁的单面星座运势卡片，2:3比例，")
+                .append("深空蓝紫渐变背景，少量柔和星光，留白充足，")
+                .append("中心有金色 ").append(constellation).append(" 星座符号与中文名称，")
+                .append("下方一行小字标注今日日期，")
+                .append("左下角四个轻量图标展示爱情/事业/财运/健康星级，")
+                .append("右下角列出幸运数字和幸运颜色，")
+                .append("整体现代、干净、清晰、无多余纹理，印刷级质量，300dpi，")
+                .append("卡片底部一行简短运势概述：").append(shortText)
+                .toString();
     }
 
     /**

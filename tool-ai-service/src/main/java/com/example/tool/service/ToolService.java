@@ -38,11 +38,12 @@ public interface ToolService {
     String generateNameSign(String openid, NameSignDTO dto);
     
     /**
-     * 运势测试生成
-     * 
+     * 今日运势生成
+     * 使用万年历接口获取当天黄历信息，并调用火山引擎生成运势图片
+     *
      * @param openid 用户openid
-     * @param dto 运势测试请求参数
-     * @return 生成的运势图片URL
+     * @param dto    今日运势请求参数，包含日期
+     * @return 生成的运势图片URL（IMAGE_LIST 单图格式）
      */
     String generateFortune(String openid, FortuneDTO dto);
     
@@ -55,5 +56,14 @@ public interface ToolService {
      * @return 生成的星座运势图片URL
      */
     String generateConstellationFortune(String openid, ConstellationFortuneDTO dto);
+
+    /**
+     * 老照片修复（GFPGAN）
+     *
+     * @param openid 用户openid
+     * @param dto 修复请求参数
+     * @return 修复后图片URL（IMAGE_LIST 单图格式）
+     */
+    String restoreOldPhoto(String openid, OldPhotoRestoreDTO dto);
 }
 

@@ -10,6 +10,8 @@ if (!Math) {
   "./pages/fortune/fortune.js";
   "./pages/constellation/constellation.js";
   "./pages/result/result.js";
+  "./pages/old-photo/old-photo.js";
+  "./pages/life/life.js";
   "./pages/user/user.js";
 }
 const _sfc_main = {

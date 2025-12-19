@@ -1,0 +1,210 @@
+
+.container.data-v-c9b3d7a8 {
+	min-height: 100vh;
+	background-color: #f8f9fa;
+	padding: 40rpx 30rpx;
+}
+.header.data-v-c9b3d7a8 {
+	margin-bottom: 40rpx;
+	padding-left: 10rpx;
+}
+.title.data-v-c9b3d7a8 {
+	font-size: 44rpx;
+	font-weight: bold;
+	color: #333;
+	display: block;
+}
+.subtitle.data-v-c9b3d7a8 {
+	font-size: 26rpx;
+	color: #999;
+	margin-top: 10rpx;
+	display: block;
+}
+
+/* Tab切换 */
+.tabs.data-v-c9b3d7a8 {
+	display: flex;
+	background: #fff;
+	border-radius: 24rpx;
+	padding: 20rpx;
+	margin-bottom: 30rpx;
+	box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.04);
+}
+.tab-item.data-v-c9b3d7a8 {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	padding: 20rpx 10rpx;
+	border-radius: 16rpx;
+	transition: all 0.3s;
+}
+.tab-item.active.data-v-c9b3d7a8 {
+	background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+.tab-icon.data-v-c9b3d7a8 {
+	font-size: 40rpx;
+	margin-bottom: 8rpx;
+}
+.tab-name.data-v-c9b3d7a8 {
+	font-size: 24rpx;
+	color: #666;
+}
+.tab-item.active .tab-name.data-v-c9b3d7a8 {
+	color: #fff;
+	font-weight: 500;
+}
+
+/* 内容区域 */
+.content.data-v-c9b3d7a8 {
+	margin-bottom: 40rpx;
+}
+.form-card.data-v-c9b3d7a8 {
+	background: #fff;
+	border-radius: 24rpx;
+	padding: 40rpx 30rpx;
+	box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.04);
+}
+.form-item.data-v-c9b3d7a8 {
+	margin-bottom: 40rpx;
+}
+.form-item.inline.data-v-c9b3d7a8 {
+	display: flex;
+	gap: 20rpx;
+}
+.form-item-inline.data-v-c9b3d7a8 {
+	flex: 1;
+	min-width: 0;
+}
+.label.data-v-c9b3d7a8 {
+	font-size: 28rpx;
+	color: #333;
+	font-weight: 500;
+	margin-bottom: 16rpx;
+	display: block;
+}
+.label.required.data-v-c9b3d7a8::before {
+	content: '*';
+	color: #ff4757;
+	margin-right: 4rpx;
+}
+.input.data-v-c9b3d7a8 {
+	width: 100%;
+	padding: 24rpx 20rpx;
+	background: #f8f9fa;
+	border-radius: 16rpx;
+	font-size: 28rpx;
+	color: #333;
+	min-height: 88rpx;
+	line-height: 40rpx;
+	box-sizing: border-box;
+}
+
+/* Picker样式 */
+.picker-wrapper.data-v-c9b3d7a8 {
+	width: 100%;
+}
+.picker.data-v-c9b3d7a8 {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 24rpx 20rpx;
+	background: #f8f9fa;
+	border-radius: 16rpx;
+	min-height: 88rpx;
+	box-sizing: border-box;
+}
+.picker-text.data-v-c9b3d7a8 {
+	font-size: 28rpx;
+	color: #333;
+	flex: 1;
+}
+.picker-arrow.data-v-c9b3d7a8 {
+	font-size: 24rpx;
+	color: #999;
+}
+.submit-btn.data-v-c9b3d7a8 {
+	width: 100%;
+	padding: 28rpx;
+	background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+	color: #fff;
+	border-radius: 16rpx;
+	font-size: 32rpx;
+	font-weight: 500;
+	margin-top: 20rpx;
+}
+.submit-btn.data-v-c9b3d7a8:active {
+	opacity: 0.8;
+}
+
+/* 结果展示 */
+.result-box.data-v-c9b3d7a8 {
+	margin-top: 40rpx;
+	padding: 30rpx;
+	background: #f8f9fa;
+	border-radius: 16rpx;
+}
+.result-item.data-v-c9b3d7a8 {
+	margin-bottom: 20rpx;
+	padding-bottom: 20rpx;
+	border-bottom: 1rpx solid #e0e0e0;
+}
+.result-item.data-v-c9b3d7a8:last-child {
+	margin-bottom: 0;
+	padding-bottom: 0;
+	border-bottom: none;
+}
+.result-time.data-v-c9b3d7a8 {
+	font-size: 24rpx;
+	color: #999;
+	display: block;
+	margin-bottom: 8rpx;
+}
+.result-desc.data-v-c9b3d7a8 {
+	font-size: 28rpx;
+	color: #333;
+	line-height: 1.6;
+}
+.result-label.data-v-c9b3d7a8 {
+	font-size: 28rpx;
+	color: #666;
+	margin-right: 10rpx;
+}
+.result-value.data-v-c9b3d7a8 {
+	font-size: 28rpx;
+	color: #333;
+	font-weight: 500;
+}
+
+/* 彩票号码样式 */
+.lottery-numbers.data-v-c9b3d7a8 {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 12rpx;
+	margin-top: 8rpx;
+}
+.lottery-number.data-v-c9b3d7a8 {
+	display: inline-block;
+	width: 60rpx;
+	height: 60rpx;
+	line-height: 60rpx;
+	text-align: center;
+	border-radius: 50%;
+	font-size: 24rpx;
+	font-weight: 500;
+	color: #fff;
+}
+.lottery-number.red.data-v-c9b3d7a8 {
+	background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+}
+.lottery-number.blue.data-v-c9b3d7a8 {
+	background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+.lottery-separator.data-v-c9b3d7a8 {
+	font-size: 32rpx;
+	color: #999;
+	margin: 0 8rpx;
+	font-weight: bold;
+}

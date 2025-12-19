@@ -1,32 +1,22 @@
 <template>
     <view class="container">
         <view class="form-item">
-            <text class="label">请输入姓名</text>
-            <input
-                v-model="name"
-                class="input"
-                placeholder="例如：张三"
-                maxlength="20"
-            />
-        </view>
-
-        <view class="form-item">
-            <text class="label">选择出生日期</text>
+            <text class="label">选择日期（默认今日）</text>
             <picker
                 mode="date"
-                :value="birthDate"
+                :value="date"
                 @change="onDateChange"
             >
                 <view class="picker">
-                    <text :class="{ placeholder: !birthDate }">
-                        {{ birthDate || '请选择出生日期' }}
+                    <text :class="{ placeholder: !date }">
+                        {{ date || '请选择日期' }}
                     </text>
                 </view>
             </picker>
         </view>
 
-        <button class="generate-btn" :disabled="!name || !birthDate || generating" @click="generate">
-            {{ generating ? '生成中...' : '立即生成' }}
+        <button class="generate-btn" :disabled="loading" @click="generate">
+            {{ loading ? '生成中...' : '生成今日运势卡片' }}
         </button>
 
         <!-- Banner广告 -->
@@ -44,46 +34,63 @@ export default {
     },
     data() {
         return {
-            name: '',
-            birthDate: '',
-            generating: false
+            date: '',
+            loading: false,
+            fortune: null
         };
+    },
+    onLoad() {
+        const d = new Date();
+        const y = d.getFullYear();
+        const m = d.getMonth() + 1;
+        const day = d.getDate();
+        // 万年历接口支持 yyyy-M-d 或 yyyy-MM-dd，这里统一用 yyyy-M-d
+        this.date = `${y}-${m}-${day}`;
     },
     methods: {
         onDateChange(e) {
-            this.birthDate = e.detail.value;
+            this.date = e.detail.value;
         },
         async generate() {
-            if (!this.name.trim()) {
+            if (!this.date) {
                 uni.showToast({
-                    title: '请输入姓名',
-                    icon: 'none'
-                });
-                return;
-            }
-            if (!this.birthDate) {
-                uni.showToast({
-                    title: '请选择出生日期',
+                    title: '请选择日期',
                     icon: 'none'
                 });
                 return;
             }
 
-            this.generating = true;
+            this.loading = true;
             try {
                 const res = await api.generateFortune({
-                    name: this.name,
-                    birthDate: this.birthDate
+                    date: this.date
                 });
                 if (res.code === 200) {
-                    uni.navigateTo({
-                        url: `/pages/result/result?type=4&resultUrl=${encodeURIComponent(res.data.resultUrl)}`
+                    const url = res.data && res.data.resultUrl;
+                    if (url) {
+                        uni.navigateTo({
+                            url: `/pages/result/result?type=4&resultUrl=${encodeURIComponent(url)}`
+                        });
+                    } else {
+                        uni.showToast({
+                            title: '生成失败，请稍后重试',
+                            icon: 'none'
+                        });
+                    }
+                } else {
+                    uni.showToast({
+                        title: res.message || '查询失败',
+                        icon: 'none'
                     });
                 }
             } catch (e) {
-                console.error('生成失败', e);
+                console.error('查询失败', e);
+                uni.showToast({
+                    title: '查询失败，请稍后重试',
+                    icon: 'none'
+                });
             } finally {
-                this.generating = false;
+                this.loading = false;
             }
         }
     }

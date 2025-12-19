@@ -22,18 +22,10 @@
 }
 .tool-grid.data-v-1cf27b2a {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 30rpx;
-    margin-bottom: 100rpx;
-}
-
-/* 如果有5个工具，可以改为3列布局 */
-/* .tool-grid {
-    display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 20rpx;
     margin-bottom: 100rpx;
-} */
+}
 .tool-item.data-v-1cf27b2a {
     background: #fff;
     border-radius: 20rpx;

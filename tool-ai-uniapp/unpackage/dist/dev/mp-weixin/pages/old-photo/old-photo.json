@@ -1,0 +1,8 @@
+{
+  "navigationBarTitleText": "老照片修复",
+  "navigationBarBackgroundColor": "#ffffff",
+  "navigationBarTextStyle": "black",
+  "usingComponents": {
+    "ad-video-banner": "../../common/components/ad-video-banner"
+  }
+}

@@ -1,0 +1,64 @@
+================================================================================
+三个工程的部署方案
+================================================================================
+
+1. 后端服务 (tool-ai-service) - Java Spring Boot
+--------------------------------------------------------------------------------
+环境要求: JDK 8+, Maven 3.x
+
+编译打包:
+  cd tool-ai-service
+  mvn clean package -DskipTests
+
+部署步骤:
+  1. 将 target/tool-ai-service-1.0.jar 复制到服务器部署目录。
+  2. 将 src/main/resources/application.yml (以及 -dev.yml, -prod.yml) 复制到同一目录或 logs/。
+  3. 使用 service.sh 脚本管理服务:
+     - 启动: sh service.sh start
+     - 停止: sh service.sh stop
+     - 重启: sh service.sh restart
+     - 状态: sh service.sh status
+  4. 查看日志:
+     - 实时日志: tail -f logs/tool.log
+
+注意事项:
+  - 默认端口在 application.yml 中配置。
+  - 确保 logs 目录有写入权限。
+
+2. 数据分析服务 (dataAnalysis-backend) - Python
+--------------------------------------------------------------------------------
+环境要求: Python 3.12+, venv
+
+部署步骤:
+  1. 进入目录: cd dataAnalysis-backend
+  2. 创建虚拟环境 (若不存在): python -m venv venv
+  3. 激活虚拟环境: source venv/bin/activate (Linux/macOS) 或 venv\Scripts\activate (Windows)
+  4. 安装依赖: pip install -r requirements.txt
+  5. 配置 config.ini (可参考 config.template.ini)。
+  6. 使用 deploy.sh 脚本部署:
+     - ./deploy.sh [端口号]
+  7. 也可以使用 run_as_daemon.sh 后台运行。
+
+注意事项:
+  - 该服务通常作为 tool-ai-service 的插件或独立 API 运行。
+
+3. 前端应用 (tool-ai-uniapp) - Uni-app
+--------------------------------------------------------------------------------
+环境要求: HBuilderX (推荐) 或 Node.js (vue-cli 模式)
+
+部署步骤 (微信小程序):
+  1. 在 HBuilderX 中打开 tool-ai-uniapp 项目。
+  2. 点击菜单: 发行 -> 小程序-微信 (仅适用于正式发布)。
+  3. HBuilderX 会自动编译代码到 unpackage/dist/build/mp-weixin 目录。
+  4. 使用微信开发者工具导入该目录。
+  5. 在微信开发者工具中点击“上传”，提交至微信后台。
+
+部署步骤 (H5/Web):
+  1. 在 HBuilderX 中点击: 发行 -> 网站-PC/手机或大屏终端。
+  2. 编译后的代码位于 unpackage/dist/build/h5。
+  3. 将该目录下的所有文件上传至 Web 服务器 (如 Nginx) 的根目录。
+
+注意事项:
+  - 部署前请在 common/config/ 中检查 API 接口地址是否正确。
+  - 微信小程序需要在微信管理后台配置服务器域名白名单。
+

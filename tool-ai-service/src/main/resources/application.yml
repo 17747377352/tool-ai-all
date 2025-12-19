@@ -4,11 +4,8 @@ server:
 spring:
   profiles:
     active: dev
-
-# DataAnalysis服务配置（dataAnalysis-backend项目）
-data-analysis:
-  # 是否启用dataAnalysis服务（优先使用dataAnalysis，失败则回退到stealer或本地实现）
-  enabled: true
-  # DataAnalysis服务的基础URL
-  base-url: http://localhost:8000
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
 

@@ -29,7 +29,8 @@ public class WebMvcConfig implements WebMvcConfigurer {
             "/",
             "/actuator/**",
             "/health",
-            "/proxy/**" // 图片代理接口
+            "/proxy/**", // 外部图片代理接口（兼容旧版本）
+            "/api/image/**" // 本地图片代理接口，允许匿名访问
     );
 
     @Override

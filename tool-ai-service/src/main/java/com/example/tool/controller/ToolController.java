@@ -2,7 +2,7 @@ package com.example.tool.controller;
 
 import com.example.tool.dto.*;
 import com.example.tool.result.Result;
-import com.example.tool.service.OssService;
+import com.example.tool.service.LocalFileService;
 import com.example.tool.service.ToolService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -29,7 +29,7 @@ import java.util.UUID;
 public class ToolController {
 
     private final ToolService toolService;
-    private final OssService ossService;
+    private final LocalFileService localFileService;
 
     /**
      * 短视频去水印接口
@@ -80,9 +80,9 @@ public class ToolController {
     }
 
     /**
-     * 运势测试生成接口
+     * 今日运势生成接口（万年历 + 火山图片）
      * 
-     * @param dto 运势测试请求参数，包含姓名和出生日期等信息
+     * @param dto 今日运势请求参数，包含查询日期
      * @param request HTTP请求对象，用于获取用户openid（从JWT拦截器注入）
      * @return 统一返回结果，包含生成的运势图片URL
      */
@@ -114,7 +114,7 @@ public class ToolController {
 
     /**
      * 图片上传接口
-     * 用于上传图片到OSS，返回可访问的URL（用于图生图功能）
+     * 用于上传图片到本地存储，返回可访问的URL（用于图生图功能）
      * 
      * @param file 上传的图片文件
      * @param request HTTP请求对象，用于获取用户openid（从JWT拦截器注入）
@@ -136,8 +136,8 @@ public class ToolController {
             String fileName = "ai-avatar/" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")) 
                     + "/" + UUID.randomUUID().toString() + extension;
             
-            // 上传到OSS
-            String imageUrl = ossService.uploadFile(file.getInputStream(), fileName, file.getContentType());
+            // 上传到本地存储
+            String imageUrl = localFileService.uploadFile(file.getInputStream(), fileName, file.getContentType());
             
             Map<String, String> result = new HashMap<>();
             result.put("imageUrl", imageUrl);
@@ -148,6 +148,22 @@ public class ToolController {
         } catch (Exception e) {
             return Result.error("图片上传失败: " + e.getMessage());
         }
+    }
+
+    /**
+     * 老照片修复（GFPGAN）
+     *
+     * @param dto 请求参数，包含图片URL
+     * @param request HTTP请求对象，用于获取用户openid
+     * @return 修复后的图片URL
+     */
+    @PostMapping("/restore-old-photo")
+    public Result<Map<String, String>> restoreOldPhoto(@RequestBody OldPhotoRestoreDTO dto, HttpServletRequest request) {
+        String openid = (String) request.getAttribute("openid");
+        String resultUrl = toolService.restoreOldPhoto(openid, dto);
+        Map<String, String> result = new HashMap<>();
+        result.put("resultUrl", resultUrl);
+        return Result.success(result);
     }
 }
 

@@ -13,7 +13,7 @@
 const BASE_URL = 'http://localhost:8080';
 
 // 生产环境（部署时取消注释并修改）
-// const BASE_URL = 'https://api.yourdomain.com';
+// const BASE_URL = 'http://123.56.22.101:38080';
 
 export default {
     BASE_URL

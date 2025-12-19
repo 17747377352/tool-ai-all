@@ -9,7 +9,13 @@ const api = {
   generateAiAvatar: (data) => common_utils_request.request({ url: "/tool/ai-avatar", method: "POST", data }),
   generateNameSign: (data) => common_utils_request.request({ url: "/tool/name-sign", method: "POST", data }),
   generateFortune: (data) => common_utils_request.request({ url: "/tool/fortune", method: "POST", data }),
-  generateConstellationFortune: (data) => common_utils_request.request({ url: "/tool/constellation-fortune", method: "POST", data })
+  generateConstellationFortune: (data) => common_utils_request.request({ url: "/tool/constellation-fortune", method: "POST", data }),
+  restoreOldPhoto: (data) => common_utils_request.request({ url: "/tool/restore-old-photo", method: "POST", data }),
+  // 生活查询
+  lifeExpress: (data) => common_utils_request.request({ url: "/life/express", method: "POST", data }),
+  lifeOilPrice: (params) => common_utils_request.request({ url: "/life/oil-price", method: "GET", data: params || {} }),
+  lifeForex: (params) => common_utils_request.request({ url: "/life/forex", method: "GET", data: params || {} }),
+  lifeLottery: (params) => common_utils_request.request({ url: "/life/lottery", method: "GET", data: params || {} })
 };
 exports.api = api;
 //# sourceMappingURL=../../../.sourcemap/mp-weixin/common/utils/api.js.map

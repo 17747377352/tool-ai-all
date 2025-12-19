@@ -4,10 +4,65 @@
             <text class="result-title">@{{ nickname }}专属{{ typeName }}</text>
         </view>
 
-        <!-- 根据类型显示图片或视频 -->
+        <!-- 根据类型显示图片、视频或黄历卡片 -->
         <view class="result-container">
+            <!-- 今日黄历卡片 (Type 4) -->
+            <view v-if="isFortuneCard" class="fortune-card">
+                <view class="fortune-inner">
+                    <view class="fortune-header-box">
+                        <view class="header-decoration left">☯</view>
+                        <text class="fortune-header-title">今日黄历</text>
+                        <view class="header-decoration right">☯</view>
+                    </view>
+                    
+                    <view class="fortune-main-table">
+                        <!-- 第一行：日期 -->
+                        <view class="fortune-row">
+                            <view class="fortune-label">公历</view>
+                            <view class="fortune-value">{{ fortuneData.date }} {{ fortuneData.weekday }}</view>
+                            <view class="fortune-label">农历</view>
+                            <view class="fortune-value">{{ fortuneData.lunar }}</view>
+                        </view>
+                        
+                        <!-- 第二行：干支/吉日 -->
+                        <view class="fortune-row">
+                            <view class="fortune-label">干支</view>
+                            <view class="fortune-value">{{ fortuneData.lunarYear }}</view>
+                            <view class="fortune-label">黄道吉日</view>
+                            <view class="fortune-value">{{ fortuneData.desc || '吉' }}</view>
+                        </view>
+                        
+                        <!-- 宜 -->
+                        <view class="fortune-info-row">
+                            <view class="fortune-label item-label">
+                                <view class="badge yi">宜</view>
+                            </view>
+                            <view class="fortune-info-content yi-text">{{ fortuneData.suit || '诸事皆宜' }}</view>
+                        </view>
+                        
+                        <!-- 忌 -->
+                        <view class="fortune-info-row">
+                            <view class="fortune-label item-label">
+                                <view class="badge ji">忌</view>
+                            </view>
+                            <view class="fortune-info-content ji-text">{{ fortuneData.avoid || '诸事不忌' }}</view>
+                        </view>
+                        
+                        <!-- 冲/节日 (如果有) -->
+                        <view v-if="fortuneData.holiday || fortuneData.animalsYear" class="fortune-info-row">
+                            <view class="fortune-label item-label">
+                                <view class="badge chong">岁</view>
+                            </view>
+                            <view class="fortune-info-content chong-text">
+                                {{ fortuneData.animalsYear }}年 {{ fortuneData.holiday ? ' | ' + fortuneData.holiday : '' }}
+                            </view>
+                        </view>
+                    </view>
+                </view>
+            </view>
+
             <!-- 视频类型 -->
-            <view v-if="isVideo" class="result-video-container">
+            <view v-else-if="isVideo" class="result-video-container">
                 <video 
                     :src="resultUrl" 
                     class="result-video" 
@@ -53,7 +108,7 @@
             </view>
         </view>
 
-        <view class="action-buttons">
+        <view v-if="!isFortuneCard" class="action-buttons">
             <button class="save-btn" @click="saveToAlbum">
                 {{ isVideo ? '保存视频到相册' : (imageList.length > 1 ? `保存全部${imageList.length}张图片` : '保存到相册') }}
             </button>
@@ -79,6 +134,8 @@ export default {
             typeName: '',
             nickname: '用户',
             isVideo: false,
+            isFortuneCard: false, // 是否显示黄历卡片
+            fortuneData: {},      // 黄历数据
             imageList: [], // 多图列表
             currentImageIndex: 0 // 当前显示的图片索引
         };
@@ -111,6 +168,18 @@ export default {
                 console.error('解析图片列表失败', e);
                 this.resultUrl = url;
             }
+        } else if (url.startsWith('FORTUNE_JSON:')) {
+            // 今日黄历卡片渲染模式
+            try {
+                const jsonStr = url.substring('FORTUNE_JSON:'.length);
+                this.fortuneData = JSON.parse(jsonStr);
+                this.isFortuneCard = true;
+                this.resultUrl = ''; // 不显示图片
+                console.log('检测到黄历JSON，开启卡片渲染模式', this.fortuneData);
+            } catch (e) {
+                console.error('解析黄历JSON失败', e);
+                this.resultUrl = url;
+            }
         } else {
             this.resultUrl = url;
             // 判断是否为视频（去水印类型且URL包含视频特征）
@@ -129,7 +198,8 @@ export default {
                 '2': 'AI头像',
                 '3': '姓氏签名',
                 '4': '运势测试',
-                '5': '星座运势'
+                '5': '星座运势',
+                '6': '老照片修复'
             };
             return names[type] || '结果';
         },
@@ -508,5 +578,123 @@ export default {
     font-size: 32rpx;
     border: none;
 }
+
+/* 今日黄历卡片样式 */
+.fortune-card {
+    background-color: #fdf6e3;
+    border: 1px solid #dcd3b2;
+    border-radius: 12rpx;
+    padding: 20rpx;
+    box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
+}
+
+.fortune-inner {
+    border: 1px solid #e8e0c5;
+    background-color: #fffaf0;
+    padding: 20rpx;
+}
+
+.fortune-header-box {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-bottom: 2rpx solid #efead3;
+    padding-bottom: 20rpx;
+    margin-bottom: 20rpx;
+}
+
+.fortune-header-title {
+    font-size: 36rpx;
+    color: #8b4513;
+    font-weight: bold;
+    margin: 0 30rpx;
+}
+
+.header-decoration {
+    color: #c9a063;
+    font-size: 32rpx;
+}
+
+.fortune-main-table {
+    display: flex;
+    flex-direction: column;
+}
+
+.fortune-row {
+    display: flex;
+    border: 1rpx solid #efead3;
+    margin-bottom: -1rpx;
+}
+
+.fortune-label {
+    flex: 1;
+    background-color: #faf7eb;
+    color: #666;
+    font-size: 24rpx;
+    padding: 16rpx 10rpx;
+    text-align: center;
+    border-right: 1rpx solid #efead3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.fortune-value {
+    flex: 2;
+    background-color: #fff;
+    color: #333;
+    font-size: 26rpx;
+    padding: 16rpx 20rpx;
+    border-right: 1rpx solid #efead3;
+    display: flex;
+    align-items: center;
+}
+
+.fortune-value:last-child {
+    border-right: none;
+}
+
+.fortune-info-row {
+    display: flex;
+    border: 1rpx solid #efead3;
+    margin-top: -1rpx;
+    min-height: 100rpx;
+}
+
+.item-label {
+    flex: 0 0 120rpx;
+    background-color: #faf7eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.fortune-info-content {
+    flex: 1;
+    background-color: #fff;
+    padding: 20rpx;
+    font-size: 26rpx;
+    line-height: 1.6;
+}
+
+.badge {
+    width: 60rpx;
+    height: 60rpx;
+    border-radius: 50%;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28rpx;
+    font-weight: bold;
+}
+
+.badge.yi { background-color: #e64340; } /* 红色 宜 */
+.badge.ji { background-color: #09bb07; } /* 绿色 忌 */
+.badge.chong { background-color: #576b95; } /* 蓝色 冲/岁 */
+
+.yi-text { color: #d32f2f; }
+.ji-text { color: #388e3c; }
+.chong-text { color: #1976d2; }
 </style>
 

@@ -56,7 +56,9 @@ const _sfc_main = {
         "ai-avatar": "/pages/ai-avatar/ai-avatar",
         "name-sign": "/pages/name-sign/name-sign",
         "fortune": "/pages/fortune/fortune",
-        "constellation": "/pages/constellation/constellation"
+        "constellation": "/pages/constellation/constellation",
+        "old-photo": "/pages/old-photo/old-photo",
+        "life": "/pages/life/life"
       };
       common_vendor.index.navigateTo({
         url: pages[toolName]
@@ -69,13 +71,15 @@ if (!Array) {
   _component_ad_video_banner();
 }
 function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
-  return {
+  return common_vendor.e({
     a: common_vendor.o(($event) => $options.navigateToTool("remove-logo")),
-    b: common_vendor.o(($event) => $options.navigateToTool("ai-avatar")),
-    c: common_vendor.o(($event) => $options.navigateToTool("name-sign")),
+    b: common_vendor.o(($event) => $options.navigateToTool("ai-avatar"))
+  }, {}, {
     d: common_vendor.o(($event) => $options.navigateToTool("fortune")),
-    e: common_vendor.o(($event) => $options.navigateToTool("constellation"))
-  };
+    e: common_vendor.o(($event) => $options.navigateToTool("constellation")),
+    f: common_vendor.o(($event) => $options.navigateToTool("old-photo")),
+    g: common_vendor.o(($event) => $options.navigateToTool("life"))
+  });
 }
 const MiniProgramPage = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["render", _sfc_render], ["__scopeId", "data-v-1cf27b2a"]]);
 wx.createPage(MiniProgramPage);

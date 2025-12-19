@@ -13,6 +13,10 @@ const _sfc_main = {
       typeName: "",
       nickname: "用户",
       isVideo: false,
+      isFortuneCard: false,
+      // 是否显示黄历卡片
+      fortuneData: {},
+      // 黄历数据
       imageList: [],
       // 多图列表
       currentImageIndex: 0
@@ -20,15 +24,15 @@ const _sfc_main = {
     };
   },
   onLoad(options) {
-    common_vendor.index.__f__("log", "at pages/result/result.vue:87", "=== result页面加载 ===");
-    common_vendor.index.__f__("log", "at pages/result/result.vue:88", "原始options:", options);
-    common_vendor.index.__f__("log", "at pages/result/result.vue:89", "原始resultUrl:", options.resultUrl);
+    common_vendor.index.__f__("log", "at pages/result/result.vue:144", "=== result页面加载 ===");
+    common_vendor.index.__f__("log", "at pages/result/result.vue:145", "原始options:", options);
+    common_vendor.index.__f__("log", "at pages/result/result.vue:146", "原始resultUrl:", options.resultUrl);
     let url = decodeURIComponent(options.resultUrl || "");
-    common_vendor.index.__f__("log", "at pages/result/result.vue:92", "解码后的URL:", url);
+    common_vendor.index.__f__("log", "at pages/result/result.vue:149", "解码后的URL:", url);
     this.type = options.type || "";
     this.typeName = this.getTypeName(this.type);
     this.nickname = common_vendor.index.getStorageSync("nickname") || "用户";
-    common_vendor.index.__f__("log", "at pages/result/result.vue:98", "result页面加载，type:", this.type, "url:", url);
+    common_vendor.index.__f__("log", "at pages/result/result.vue:155", "result页面加载，type:", this.type, "url:", url);
     if (url.startsWith("IMAGE_LIST:")) {
       try {
         const imageListJson = url.substring("IMAGE_LIST:".length);
@@ -36,20 +40,31 @@ const _sfc_main = {
         if (this.imageList && this.imageList.length > 0) {
           this.resultUrl = this.imageList[0];
           this.currentImageIndex = 0;
-          common_vendor.index.__f__("log", "at pages/result/result.vue:108", "检测到多图内容，共", this.imageList.length, "张图片");
+          common_vendor.index.__f__("log", "at pages/result/result.vue:165", "检测到多图内容，共", this.imageList.length, "张图片");
         }
       } catch (e) {
-        common_vendor.index.__f__("error", "at pages/result/result.vue:111", "解析图片列表失败", e);
+        common_vendor.index.__f__("error", "at pages/result/result.vue:168", "解析图片列表失败", e);
+        this.resultUrl = url;
+      }
+    } else if (url.startsWith("FORTUNE_JSON:")) {
+      try {
+        const jsonStr = url.substring("FORTUNE_JSON:".length);
+        this.fortuneData = JSON.parse(jsonStr);
+        this.isFortuneCard = true;
+        this.resultUrl = "";
+        common_vendor.index.__f__("log", "at pages/result/result.vue:178", "检测到黄历JSON，开启卡片渲染模式", this.fortuneData);
+      } catch (e) {
+        common_vendor.index.__f__("error", "at pages/result/result.vue:180", "解析黄历JSON失败", e);
         this.resultUrl = url;
       }
     } else {
       this.resultUrl = url;
       this.isVideo = this.type === "1" && this.isVideoUrl(this.resultUrl);
     }
-    common_vendor.index.__f__("log", "at pages/result/result.vue:120", "=== 最终显示信息 ===");
-    common_vendor.index.__f__("log", "at pages/result/result.vue:121", "最终resultUrl:", this.resultUrl);
-    common_vendor.index.__f__("log", "at pages/result/result.vue:122", "isVideo:", this.isVideo);
-    common_vendor.index.__f__("log", "at pages/result/result.vue:123", "==================");
+    common_vendor.index.__f__("log", "at pages/result/result.vue:189", "=== 最终显示信息 ===");
+    common_vendor.index.__f__("log", "at pages/result/result.vue:190", "最终resultUrl:", this.resultUrl);
+    common_vendor.index.__f__("log", "at pages/result/result.vue:191", "isVideo:", this.isVideo);
+    common_vendor.index.__f__("log", "at pages/result/result.vue:192", "==================");
   },
   methods: {
     getTypeName(type) {
@@ -58,7 +73,8 @@ const _sfc_main = {
         "2": "AI头像",
         "3": "姓氏签名",
         "4": "运势测试",
-        "5": "星座运势"
+        "5": "星座运势",
+        "6": "老照片修复"
       };
       return names[type] || "结果";
     },
@@ -85,10 +101,10 @@ const _sfc_main = {
       return false;
     },
     onImageLoad() {
-      common_vendor.index.__f__("log", "at pages/result/result.vue:163", "图片加载完成", this.resultUrl);
+      common_vendor.index.__f__("log", "at pages/result/result.vue:233", "图片加载完成", this.resultUrl);
     },
     onImageError(e) {
-      common_vendor.index.__f__("error", "at pages/result/result.vue:166", "图片加载失败", e, this.resultUrl);
+      common_vendor.index.__f__("error", "at pages/result/result.vue:236", "图片加载失败", e, this.resultUrl);
       common_vendor.index.showModal({
         title: "图片加载失败",
         content: "图片可能无法访问，请检查：\n1. 网络连接\n2. 小程序域名白名单配置\n3. 图片链接是否有效\n\n图片地址：" + (this.resultUrl.length > 50 ? this.resultUrl.substring(0, 50) + "..." : this.resultUrl),
@@ -111,10 +127,10 @@ const _sfc_main = {
       });
     },
     onVideoPlay() {
-      common_vendor.index.__f__("log", "at pages/result/result.vue:195", "视频开始播放");
+      common_vendor.index.__f__("log", "at pages/result/result.vue:265", "视频开始播放");
     },
     onVideoError(e) {
-      common_vendor.index.__f__("error", "at pages/result/result.vue:198", "视频播放错误", e);
+      common_vendor.index.__f__("error", "at pages/result/result.vue:268", "视频播放错误", e);
       common_vendor.index.showToast({
         title: "视频播放失败，请检查网络",
         icon: "none"
@@ -139,7 +155,7 @@ const _sfc_main = {
           icon: "success"
         });
       } catch (e) {
-        common_vendor.index.__f__("error", "at pages/result/result.vue:229", "保存失败", e);
+        common_vendor.index.__f__("error", "at pages/result/result.vue:299", "保存失败", e);
         common_vendor.index.showToast({
           title: e.message || "保存失败，请重试",
           icon: "none"
@@ -171,7 +187,7 @@ const _sfc_main = {
                   resolve();
                 },
                 fail: (err) => {
-                  common_vendor.index.__f__("error", "at pages/result/result.vue:265", "保存图片失败", err);
+                  common_vendor.index.__f__("error", "at pages/result/result.vue:335", "保存图片失败", err);
                   if (err.errMsg && err.errMsg.includes("auth deny")) {
                     common_vendor.index.showModal({
                       title: "需要相册权限",
@@ -188,7 +204,7 @@ const _sfc_main = {
           },
           fail: (err) => {
             common_vendor.index.hideLoading();
-            common_vendor.index.__f__("error", "at pages/result/result.vue:283", "下载文件失败", err);
+            common_vendor.index.__f__("error", "at pages/result/result.vue:353", "下载文件失败", err);
             reject(err);
           }
         });
@@ -235,7 +251,7 @@ const _sfc_main = {
                     downloadNext(index + 1);
                   },
                   fail: (err) => {
-                    common_vendor.index.__f__("error", "at pages/result/result.vue:336", `保存第${index + 1}张图片失败`, err);
+                    common_vendor.index.__f__("error", "at pages/result/result.vue:406", `保存第${index + 1}张图片失败`, err);
                     downloadNext(index + 1);
                   }
                 });
@@ -244,7 +260,7 @@ const _sfc_main = {
               }
             },
             fail: (err) => {
-              common_vendor.index.__f__("error", "at pages/result/result.vue:348", `下载第${index + 1}张图片失败`, err);
+              common_vendor.index.__f__("error", "at pages/result/result.vue:418", `下载第${index + 1}张图片失败`, err);
               downloadNext(index + 1);
             }
           });
@@ -273,7 +289,7 @@ const _sfc_main = {
                   resolve();
                 },
                 fail: (err) => {
-                  common_vendor.index.__f__("error", "at pages/result/result.vue:381", "保存视频失败", err);
+                  common_vendor.index.__f__("error", "at pages/result/result.vue:451", "保存视频失败", err);
                   if (err.errMsg && err.errMsg.includes("auth deny")) {
                     common_vendor.index.showModal({
                       title: "需要相册权限",
@@ -290,7 +306,7 @@ const _sfc_main = {
           },
           fail: (err) => {
             common_vendor.index.hideLoading();
-            common_vendor.index.__f__("error", "at pages/result/result.vue:399", "下载视频失败", err);
+            common_vendor.index.__f__("error", "at pages/result/result.vue:469", "下载视频失败", err);
             if (err.errMsg && err.errMsg.includes("fail")) {
               common_vendor.index.showModal({
                 title: "下载失败",
@@ -320,15 +336,27 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   return common_vendor.e({
     a: common_vendor.t($data.nickname),
     b: common_vendor.t($data.typeName),
-    c: $data.isVideo
-  }, $data.isVideo ? {
-    d: $data.resultUrl,
-    e: common_vendor.o((...args) => $options.onVideoPlay && $options.onVideoPlay(...args)),
-    f: common_vendor.o((...args) => $options.onVideoError && $options.onVideoError(...args))
+    c: $data.isFortuneCard
+  }, $data.isFortuneCard ? common_vendor.e({
+    d: common_vendor.t($data.fortuneData.date),
+    e: common_vendor.t($data.fortuneData.weekday),
+    f: common_vendor.t($data.fortuneData.lunar),
+    g: common_vendor.t($data.fortuneData.lunarYear),
+    h: common_vendor.t($data.fortuneData.desc || "吉"),
+    i: common_vendor.t($data.fortuneData.suit || "诸事皆宜"),
+    j: common_vendor.t($data.fortuneData.avoid || "诸事不忌"),
+    k: $data.fortuneData.holiday || $data.fortuneData.animalsYear
+  }, $data.fortuneData.holiday || $data.fortuneData.animalsYear ? {
+    l: common_vendor.t($data.fortuneData.animalsYear),
+    m: common_vendor.t($data.fortuneData.holiday ? " | " + $data.fortuneData.holiday : "")
+  } : {}) : $data.isVideo ? {
+    o: $data.resultUrl,
+    p: common_vendor.o((...args) => $options.onVideoPlay && $options.onVideoPlay(...args)),
+    q: common_vendor.o((...args) => $options.onVideoError && $options.onVideoError(...args))
   } : common_vendor.e({
-    g: $data.imageList.length > 0
+    r: $data.imageList.length > 0
   }, $data.imageList.length > 0 ? {
-    h: common_vendor.f($data.imageList, (imageUrl, index, i0) => {
+    s: common_vendor.f($data.imageList, (imageUrl, index, i0) => {
       return {
         a: imageUrl,
         b: common_vendor.o((...args) => $options.onImageLoad && $options.onImageLoad(...args), index),
@@ -336,21 +364,24 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
         d: index
       };
     }),
-    i: $data.currentImageIndex,
-    j: common_vendor.o((...args) => $options.onSwiperChange && $options.onSwiperChange(...args))
+    t: $data.currentImageIndex,
+    v: common_vendor.o((...args) => $options.onSwiperChange && $options.onSwiperChange(...args))
   } : {
-    k: $data.resultUrl,
-    l: common_vendor.o((...args) => $options.onImageLoad && $options.onImageLoad(...args)),
-    m: common_vendor.o((...args) => $options.onImageError && $options.onImageError(...args))
+    w: $data.resultUrl,
+    x: common_vendor.o((...args) => $options.onImageLoad && $options.onImageLoad(...args)),
+    y: common_vendor.o((...args) => $options.onImageError && $options.onImageError(...args))
   }, {
-    n: $data.imageList.length > 1
+    z: $data.imageList.length > 1
   }, $data.imageList.length > 1 ? {
-    o: common_vendor.t($data.currentImageIndex + 1),
-    p: common_vendor.t($data.imageList.length)
+    A: common_vendor.t($data.currentImageIndex + 1),
+    B: common_vendor.t($data.imageList.length)
   } : {}), {
-    q: common_vendor.t($data.isVideo ? "保存视频到相册" : $data.imageList.length > 1 ? `保存全部${$data.imageList.length}张图片` : "保存到相册"),
-    r: common_vendor.o((...args) => $options.saveToAlbum && $options.saveToAlbum(...args))
-  });
+    n: $data.isVideo,
+    C: !$data.isFortuneCard
+  }, !$data.isFortuneCard ? {
+    D: common_vendor.t($data.isVideo ? "保存视频到相册" : $data.imageList.length > 1 ? `保存全部${$data.imageList.length}张图片` : "保存到相册"),
+    E: common_vendor.o((...args) => $options.saveToAlbum && $options.saveToAlbum(...args))
+  } : {});
 }
 const MiniProgramPage = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["render", _sfc_render], ["__scopeId", "data-v-b615976f"]]);
 wx.createPage(MiniProgramPage);

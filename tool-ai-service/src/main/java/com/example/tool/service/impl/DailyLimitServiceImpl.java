@@ -51,6 +51,7 @@ public class DailyLimitServiceImpl implements DailyLimitService {
             limit.setNameSignCount(0);
             limit.setFortuneCount(0);
             limit.setConstellationCount(0);
+            limit.setRestorePhotoCount(0);
             dailyLimitMapper.insert(limit);
         }
         return limit;
@@ -60,7 +61,7 @@ public class DailyLimitServiceImpl implements DailyLimitService {
      * 检查并增加使用次数
      * 
      * @param openid 用户openid
-     * @param type 功能类型：1-去水印 2-AI头像 3-姓氏签名 4-运势测试 5-星座运势
+     * @param type 功能类型：1-去水印 2-AI头像 3-姓氏签名 4-运势测试 5-星座运势 6-老照片修复
      * @return 是否成功
      * @throws BusinessException 如果超过限制则抛出异常
      */
@@ -110,6 +111,14 @@ public class DailyLimitServiceImpl implements DailyLimitService {
                     throw new BusinessException(ResultCode.TOO_MANY_REQUESTS, "今日星座运势次数已达上限（10次）");
                 }
                 limit.setConstellationCount(currentCount + 1);
+                break;
+            case 6: // 老照片修复
+                currentCount = limit.getRestorePhotoCount();
+                maxLimit = OTHER_LIMIT;
+                if (currentCount >= maxLimit) {
+                    throw new BusinessException(ResultCode.TOO_MANY_REQUESTS, "今日老照片修复次数已达上限（10次）");
+                }
+                limit.setRestorePhotoCount(currentCount + 1);
                 break;
             default:
                 throw new BusinessException(ResultCode.PARAM_ERROR, "无效的类型");
