@@ -1,0 +1,8 @@
+{
+  "navigationBarTitleText": "星座运势详情",
+  "navigationBarBackgroundColor": "#ffffff",
+  "navigationBarTextStyle": "black",
+  "usingComponents": {
+    "ad-video-banner": "../../common/components/ad-video-banner"
+  }
+}

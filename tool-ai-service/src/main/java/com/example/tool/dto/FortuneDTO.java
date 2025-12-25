@@ -3,8 +3,11 @@ package com.example.tool.dto;
 import lombok.Data;
 
 /**
- * 今日运势请求参数
+ * 今日运势请求DTO
  * 使用万年历接口，根据指定日期查询当天的黄历信息
+ * 
+ * @author tool-ai-service
+ * @since 1.0
  */
 @Data
 public class FortuneDTO {

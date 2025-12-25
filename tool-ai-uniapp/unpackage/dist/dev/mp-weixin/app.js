@@ -9,6 +9,7 @@ if (!Math) {
   "./pages/name-sign/name-sign.js";
   "./pages/fortune/fortune.js";
   "./pages/constellation/constellation.js";
+  "./pages/constellation/constellation-detail.js";
   "./pages/result/result.js";
   "./pages/old-photo/old-photo.js";
   "./pages/life/life.js";

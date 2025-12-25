@@ -1,6 +1,7 @@
 package com.example.tool.service;
 
 import com.example.tool.dto.*;
+import com.example.tool.vo.ConstellationFortuneVO;
 
 /**
  * 工具服务接口
@@ -53,9 +54,9 @@ public interface ToolService {
      * 
      * @param openid 用户openid
      * @param dto 星座运势请求参数
-     * @return 生成的星座运势图片URL
+     * @return 星座运势数据VO对象
      */
-    String generateConstellationFortune(String openid, ConstellationFortuneDTO dto);
+    ConstellationFortuneVO generateConstellationFortune(String openid, ConstellationFortuneDTO dto);
 
     /**
      * 老照片修复（GFPGAN）

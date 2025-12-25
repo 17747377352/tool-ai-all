@@ -50,17 +50,20 @@ public class ConstellationFortuneServiceImpl implements ConstellationFortuneServ
      * 
      * @param constellation 星座名称
      * @param date 日期
-     * @param fortuneText 运势文案
-     * @param resultUrl 结果图片URL
+     * @param fortuneText 运势文案（已废弃，可为null，将使用空字符串）
+     * @param resultData 结果数据（JSON格式字符串，存储在resultUrl字段中）
      */
     @Override
-    public void saveOrUpdate(String constellation, LocalDate date, String fortuneText, String resultUrl) {
+    public void saveOrUpdate(String constellation, LocalDate date, String fortuneText, String resultData) {
         ConstellationFortune existing = getByConstellationAndDate(constellation, date);
+        
+        // fortuneText已废弃，如果为null则使用空字符串
+        String textValue = (fortuneText != null) ? fortuneText : "";
         
         if (existing != null) {
             // 更新
-            existing.setFortuneText(fortuneText);
-            existing.setResultUrl(resultUrl);
+            existing.setFortuneText(textValue);
+            existing.setResultUrl(resultData);
             constellationFortuneMapper.updateById(existing);
             log.info("更新星座运势: constellation={}, date={}", constellation, date);
         } else {
@@ -68,8 +71,8 @@ public class ConstellationFortuneServiceImpl implements ConstellationFortuneServ
             ConstellationFortune fortune = new ConstellationFortune();
             fortune.setConstellation(constellation);
             fortune.setDate(date);
-            fortune.setFortuneText(fortuneText);
-            fortune.setResultUrl(resultUrl);
+            fortune.setFortuneText(textValue);
+            fortune.setResultUrl(resultData);
             constellationFortuneMapper.insert(fortune);
             log.info("保存星座运势: constellation={}, date={}", constellation, date);
         }

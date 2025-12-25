@@ -12,9 +12,10 @@ import java.awt.image.BufferedImage;
 public interface NameSignService {
     /**
      * 生成签名图片
+     * 
      * @param surname 姓氏
-     * @param style 风格：classic-经典, cursive-行书, grass-草书, artistic-艺术
-     * @return 签名图片的BufferedImage
+     * @param style 风格：classic（经典）, cursive（行书）, grass（草书）, artistic（艺术）
+     * @return 签名图片的BufferedImage对象
      */
     BufferedImage generateSignImage(String surname, String style);
 }

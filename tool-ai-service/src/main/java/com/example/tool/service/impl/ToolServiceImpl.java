@@ -13,8 +13,10 @@ import com.example.tool.service.DeepSeekService;
 import com.example.tool.service.GfpganService;
 import com.example.tool.service.HuoshanImageService;
 import com.example.tool.service.LocalFileService;
+import com.example.tool.service.OssService;
 import com.example.tool.service.ToolService;
 import com.example.tool.service.WatermarkService;
+import com.example.tool.vo.ConstellationFortuneVO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -50,6 +52,7 @@ public class ToolServiceImpl implements ToolService {
     private final ConstellationFortuneService constellationFortuneService;
     private final WatermarkService watermarkService;
     private final LocalFileService localFileService;
+    private final OssService ossService;
     private final GfpganService gfpganService;
 
     /**
@@ -330,11 +333,11 @@ public class ToolServiceImpl implements ToolService {
      *
      * @param openid 用户openid
      * @param dto    星座运势请求参数，包含星座名称
-     * @return 生成的星座运势图片URL
-     * @throws RuntimeException 如果运势生成或上传失败
+     * @return 星座运势数据VO对象
+     * @throws RuntimeException 如果运势生成失败
      */
     @Override
-    public String generateConstellationFortune(String openid, ConstellationFortuneDTO dto) {
+    public ConstellationFortuneVO generateConstellationFortune(String openid, ConstellationFortuneDTO dto) {
         // 1. 检查限流（使用独立的星座运势限流，类型5）
         dailyLimitService.checkAndIncrement(openid, 5);
 
@@ -344,42 +347,79 @@ public class ToolServiceImpl implements ToolService {
         ConstellationFortune fortune = constellationFortuneService.getByConstellationAndDate(dto.getConstellation(),
                 today);
 
-        if (fortune != null) {
-            // 数据库中有，直接返回
-            log.info("从数据库获取星座运势: openid={}, constellation={}, url={}",
-                    openid, dto.getConstellation(), fortune.getResultUrl());
-            saveGenerateRecord(openid, 5, dto, fortune.getResultUrl());
-            return fortune.getResultUrl();
+        String jsonData;
+        if (fortune != null && fortune.getResultUrl() != null) {
+            // 数据库中有，直接使用
+            jsonData = fortune.getResultUrl();
+            log.info("从数据库获取星座运势: openid={}, constellation={}",
+                    openid, dto.getConstellation());
+        } else {
+            // 3. 数据库中没有，调用DeepSeek生成（兜底逻辑）
+            log.warn("数据库中未找到今日星座运势，调用DeepSeek生成: constellation={}, date={}",
+                    dto.getConstellation(), today);
+
+            try {
+                // 调用DeepSeek生成星座运势JSON数据
+                jsonData = deepSeekService.generateConstellationFortuneText(dto.getConstellation());
+                log.info("星座运势JSON生成成功: constellation={}, textLength={}",
+                        dto.getConstellation(), jsonData.length());
+
+                // 保存到数据库（供后续用户查询）
+                constellationFortuneService.saveOrUpdate(dto.getConstellation(), today, null, jsonData);
+
+                log.info("星座运势生成成功（兜底）: openid={}, constellation={}",
+                        openid, dto.getConstellation());
+            } catch (Exception e) {
+                log.error("星座运势生成失败", e);
+                throw new RuntimeException("星座运势生成失败: " + e.getMessage(), e);
+            }
         }
 
-        // 3. 数据库中没有，调用DeepSeek生成（兜底逻辑）
-        log.warn("数据库中未找到今日星座运势，调用DeepSeek生成: constellation={}, date={}",
-                dto.getConstellation(), today);
-
+        // 4. 解析JSON并转换为VO对象
         try {
-            // 调用DeepSeek生成星座运势文案
-            String fortuneText = deepSeekService.generateConstellationFortuneText(dto.getConstellation());
-            log.info("星座运势文案生成成功: constellation={}, textLength={}",
-                    dto.getConstellation(), fortuneText.length());
-
-            // 使用火山引擎生成星座运势图片（直接返回URL，无需上传OSS）
-            String resultUrl = huoshanImageService.generateConstellationFortuneImage(fortuneText,
-                    dto.getConstellation());
-
-            // 保存到数据库（供后续用户查询）
-            constellationFortuneService.saveOrUpdate(dto.getConstellation(), today, fortuneText, resultUrl);
-
-            log.info("星座运势生成成功（兜底）: openid={}, constellation={}, url={}",
-                    openid, dto.getConstellation(), resultUrl);
-
+            ConstellationFortuneVO vo = parseConstellationFortuneJson(jsonData, dto.getConstellation(), today);
+            
             // 保存生成记录（类型5：星座运势）
-            saveGenerateRecord(openid, 5, dto, resultUrl);
-
-            return resultUrl;
+            saveGenerateRecord(openid, 5, dto, jsonData);
+            
+            return vo;
         } catch (Exception e) {
-            log.error("星座运势生成失败", e);
-            throw new RuntimeException("星座运势生成失败: " + e.getMessage(), e);
+            log.error("解析星座运势JSON失败: jsonData={}", jsonData, e);
+            throw new RuntimeException("解析星座运势数据失败: " + e.getMessage(), e);
         }
+    }
+    
+    /**
+     * 解析星座运势JSON数据并转换为VO对象
+     * 
+     * @param jsonData JSON格式的运势数据
+     * @param constellation 星座名称
+     * @param date 日期
+     * @return 星座运势VO对象
+     */
+    private ConstellationFortuneVO parseConstellationFortuneJson(String jsonData, String constellation, LocalDate date) {
+        JSONObject json = JSONObject.parseObject(jsonData);
+        
+        ConstellationFortuneVO vo = new ConstellationFortuneVO();
+        vo.setConstellation(constellation);
+        vo.setDate(date.toString());
+        vo.setOverallScore(json.getInteger("overallScore"));
+        vo.setLoveScore(json.getInteger("loveScore"));
+        vo.setCareerScore(json.getInteger("careerScore"));
+        vo.setWealthScore(json.getInteger("wealthScore"));
+        vo.setHealthScore(json.getInteger("healthScore"));
+        vo.setLuckyColor(json.getString("luckyColor"));
+        vo.setLuckyNumber(json.getString("luckyNumber"));
+        vo.setCompatibleConstellation(json.getString("compatibleConstellation"));
+        vo.setSuitable(json.getString("suitable"));
+        vo.setAvoid(json.getString("avoid"));
+        vo.setOverallDetail(json.getString("overallDetail"));
+        vo.setLoveDetail(json.getString("loveDetail"));
+        vo.setCareerDetail(json.getString("careerDetail"));
+        vo.setWealthDetail(json.getString("wealthDetail"));
+        vo.setHealthDetail(json.getString("healthDetail"));
+        
+        return vo;
     }
 
     /**
@@ -403,14 +443,14 @@ public class ToolServiceImpl implements ToolService {
             // 调用 GFPGAN 云端修复（基于可访问的原图URL）
             byte[] restoredBytes = gfpganService.restore(dto.getImageUrl(), dto.getStrength());
 
-            // 上传到本地存储
+            // 上传到OSS（返回公网可访问的URL）
             String fileName = "old-photo-restore/" +
                     java.time.LocalDate.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMdd")) + "/"
                     + java.util.UUID.randomUUID().toString() + ".png";
-            String localUrl = localFileService.uploadFile(restoredBytes, fileName, "image/png");
+            String ossUrl = ossService.uploadFile(restoredBytes, fileName, "image/png");
 
             // 返回 IMAGE_LIST 单图格式，便于前端统一展示
-            String resultUrl = String.format("IMAGE_LIST:[\"%s\"]", localUrl);
+            String resultUrl = String.format("IMAGE_LIST:[\"%s\"]", ossUrl);
 
             // 记录生成记录，类型6：老照片修复
             saveGenerateRecord(openid, 6, dto, resultUrl);

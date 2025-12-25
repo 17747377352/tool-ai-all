@@ -3,7 +3,6 @@ package com.example.tool.task;
 import com.example.tool.entity.ConstellationFortune;
 import com.example.tool.service.ConstellationFortuneService;
 import com.example.tool.service.DeepSeekService;
-import com.example.tool.service.HuoshanImageService;
 import com.example.tool.service.impl.ConstellationFortuneServiceImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,7 +22,6 @@ public class ConstellationFortuneTask {
 
     private final ConstellationFortuneService constellationFortuneService;
     private final DeepSeekService deepSeekService;
-    private final HuoshanImageService huoshanImageService;
 
     /**
      * 每天凌晨2点执行
@@ -49,17 +47,14 @@ public class ConstellationFortuneTask {
                     continue;
                 }
                 
-                // 1. 调用DeepSeek生成运势文案
-                String fortuneText = deepSeekService.generateConstellationFortuneText(constellation);
-                log.info("星座运势文案生成成功: constellation={}, textLength={}", constellation, fortuneText.length());
+                // 1. 调用DeepSeek生成星座运势JSON数据
+                String jsonData = deepSeekService.generateConstellationFortuneText(constellation);
+                log.info("星座运势JSON生成成功: constellation={}, textLength={}", constellation, jsonData.length());
                 
-                // 2. 使用火山引擎生成星座运势图片（直接返回URL，无需上传OSS）
-                String resultUrl = huoshanImageService.generateConstellationFortuneImage(fortuneText, constellation);
+                // 2. 保存JSON数据到数据库（存储在resultUrl字段中）
+                constellationFortuneService.saveOrUpdate(constellation, today, null, jsonData);
                 
-                // 6. 保存到数据库
-                constellationFortuneService.saveOrUpdate(constellation, today, fortuneText, resultUrl);
-                
-                log.info("星座运势生成成功: constellation={}, url={}", constellation, resultUrl);
+                log.info("星座运势生成成功: constellation={}", constellation);
                 successCount++;
                 
                 // 避免API调用过快，每个星座间隔1秒

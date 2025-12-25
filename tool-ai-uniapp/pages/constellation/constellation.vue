@@ -73,9 +73,11 @@ export default {
 
                 uni.hideLoading();
                 
-                if (res.code === 200) {
+                if (res.code === 200 && res.data) {
+                    // 将返回的VO对象数据传递给详情页面
+                    const dataStr = encodeURIComponent(JSON.stringify(res.data));
                     uni.navigateTo({
-                        url: `/pages/result/result?type=5&resultUrl=${encodeURIComponent(res.data.resultUrl)}&title=${encodeURIComponent(constellation + '今日运势')}`
+                        url: `/pages/constellation/constellation-detail?data=${dataStr}`
                     });
                 } else {
                     // 处理非200的响应（如429限流错误）

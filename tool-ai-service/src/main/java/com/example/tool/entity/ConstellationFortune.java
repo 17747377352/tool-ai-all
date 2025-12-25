@@ -16,11 +16,35 @@ import java.time.LocalDateTime;
 public class ConstellationFortune {
     @TableId(type = IdType.AUTO)
     private Long id;
-    private String constellation; // 星座名称
-    private LocalDate date; // 日期
-    private String fortuneText; // 运势文案
-    private String resultUrl; // 结果图片URL
+    
+    /**
+     * 星座名称
+     */
+    private String constellation;
+    
+    /**
+     * 日期
+     */
+    private LocalDate date;
+    
+    /**
+     * 运势文案（已废弃，现使用resultUrl存储JSON数据）
+     */
+    private String fortuneText;
+    
+    /**
+     * 结果数据（JSON格式字符串，包含运势分数、详情等信息）
+     */
+    private String resultUrl;
+    
+    /**
+     * 创建时间
+     */
     private LocalDateTime createTime;
+    
+    /**
+     * 更新时间
+     */
     private LocalDateTime updateTime;
 }
 

@@ -19,6 +19,6 @@ public class RemoveLogoDTO {
      * - 小红书分享链接：https://www.xiaohongshu.com/explore/xxx
      * - 视频URL：直接提供视频文件URL
      */
-    private String shareUrl; // 分享链接或视频URL
+    private String shareUrl;
 }
 

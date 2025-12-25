@@ -15,24 +15,13 @@
             </view>
         </view>
 
-        <!-- 或选择视频 -->
-        <view class="divider">
-            <text class="divider-text">或</text>
-        </view>
-
-        <view class="upload-area" @click="chooseVideo">
-            <view v-if="!videoPath" class="upload-icon-placeholder">📹</view>
-            <video v-else :src="videoPath" class="preview-video" controls></video>
-            <text v-if="!videoPath" class="upload-text">点击选择本地视频</text>
-        </view>
-
         <view class="tips">
             <text class="tips-text">支持抖音、小红书分享链接，自动去除水印</text>
         </view>
 
         <button 
             class="generate-btn" 
-            :disabled="(!shareUrl && !videoPath) || generating" 
+            :disabled="!shareUrl || generating" 
             @click="generate"
         >
             {{ generating ? '处理中...' : '立即去水印' }}
@@ -54,7 +43,6 @@ export default {
     data() {
         return {
             shareUrl: '', // 分享链接
-            videoPath: '', // 本地视频路径
             generating: false
         };
     },
@@ -64,10 +52,6 @@ export default {
          */
         onShareUrlInput(e) {
             this.shareUrl = e.detail.value;
-            // 如果输入了分享链接，清空本地视频选择
-            if (this.shareUrl) {
-                this.videoPath = '';
-            }
         },
         
         /**
@@ -86,49 +70,10 @@ export default {
         },
         
         /**
-         * 选择本地视频
-         */
-        chooseVideo() {
-            uni.chooseVideo({
-                count: 1,
-                sizeType: ['compressed'],
-                sourceType: ['album', 'camera'],
-                maxDuration: 60,
-                camera: 'back',
-                success: (res) => {
-                    this.videoPath = res.tempFilePath;
-                    // 如果选择了本地视频，清空分享链接
-                    this.shareUrl = '';
-                },
-                fail: (err) => {
-                    console.error('选择视频失败', err);
-                    uni.showToast({
-                        title: '选择视频失败',
-                        icon: 'none'
-                    });
-                }
-            });
-        },
-        
-        /**
          * 去水印
          */
         async generate() {
-            // 优先使用分享链接
-            if (this.shareUrl) {
-                await this.generateFromShareUrl();
-            } else if (this.videoPath) {
-                // 本地视频暂不支持，提示用户使用分享链接
-                uni.showToast({
-                    title: '请使用分享链接功能',
-                    icon: 'none'
-                });
-            } else {
-                uni.showToast({
-                    title: '请粘贴分享链接或选择视频',
-                    icon: 'none'
-                });
-            }
+            await this.generateFromShareUrl();
         },
         
         /**
@@ -190,41 +135,6 @@ export default {
     padding: 30rpx;
 }
 
-.upload-area {
-    background: #fff;
-    border-radius: 20rpx;
-    padding: 60rpx 40rpx;
-    text-align: center;
-    margin-bottom: 30rpx;
-    min-height: 400rpx;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-}
-
-.upload-icon-placeholder {
-    width: 120rpx;
-    height: 120rpx;
-    margin: 0 auto 20rpx;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 80rpx;
-    line-height: 1;
-}
-
-.preview-video {
-    width: 100%;
-    max-height: 500rpx;
-    border-radius: 10rpx;
-}
-
-.upload-text {
-    font-size: 28rpx;
-    color: #999;
-}
-
 .tips {
     margin-bottom: 40rpx;
 }
@@ -280,39 +190,6 @@ export default {
 .link-tip-text {
     font-size: 24rpx;
     color: #667eea;
-}
-
-.divider {
-    text-align: center;
-    margin: 30rpx 0;
-    position: relative;
-}
-
-.divider::before,
-.divider::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    width: 30%;
-    height: 1rpx;
-    background: #ddd;
-}
-
-.divider::before {
-    left: 0;
-}
-
-.divider::after {
-    right: 0;
-}
-
-.divider-text {
-    font-size: 24rpx;
-    color: #999;
-    background: #f5f5f5;
-    padding: 0 20rpx;
-    position: relative;
-    z-index: 1;
 }
 </style>
 

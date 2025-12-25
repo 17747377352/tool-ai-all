@@ -55,6 +55,14 @@
             }
         },
         {
+            "path": "pages/constellation/constellation-detail",
+            "style": {
+                "navigationBarTitleText": "星座运势详情",
+                "navigationBarBackgroundColor": "#ffffff",
+                "navigationBarTextStyle": "black"
+            }
+        },
+        {
             "path": "pages/result/result",
             "style": {
                 "navigationBarTitleText": "生成结果",

@@ -152,12 +152,16 @@ public class DeepSeekServiceImpl implements DeepSeekService {
                     .getJSONObject("message")
                     .getString("content");
 
-            // 清理Markdown格式符号
-            content = cleanMarkdown(content);
+            // 清理可能的Markdown代码块标记和多余空白
+            content = content.trim();
+            // 移除可能的```json和```标记
+            content = content.replaceAll("^```(?:json)?\\s*", "");
+            content = content.replaceAll("\\s*```$", "");
+            content = content.trim();
             
-            log.info("星座运势文案生成成功: constellation={}, textLength={}", 
+            log.info("星座运势JSON生成成功: constellation={}, textLength={}", 
                     constellation, content.length());
-            return content.trim();
+            return content;
         } catch (Exception e) {
             log.error("调用DeepSeek API失败", e);
             if (e instanceof BusinessException) {
@@ -169,26 +173,40 @@ public class DeepSeekServiceImpl implements DeepSeekService {
 
     /**
      * 构建星座运势提示词
+     * 要求AI返回JSON格式数据
      */
     private String buildConstellationPrompt(String constellation) {
         return String.format(
-            "请为%s生成今日星座运势报告。\n\n" +
+            "请为%s生成今日星座运势报告，必须严格按照以下JSON格式输出，不要添加任何其他文字说明：\n\n" +
+            "{\n" +
+            "  \"overallScore\": 85,\n" +
+            "  \"loveScore\": 80,\n" +
+            "  \"careerScore\": 90,\n" +
+            "  \"wealthScore\": 75,\n" +
+            "  \"healthScore\": 88,\n" +
+            "  \"luckyColor\": \"蓝色\",\n" +
+            "  \"luckyNumber\": \"7\",\n" +
+            "  \"compatibleConstellation\": \"天秤座\",\n" +
+            "  \"suitable\": \"参加聚会、制定计划、学习新技能\",\n" +
+            "  \"avoid\": \"过度消费、冲动决定、熬夜\",\n" +
+            "  \"overallDetail\": \"今日整体运势良好，各项事务进展顺利，适合主动出击。\",\n" +
+            "  \"loveDetail\": \"爱情运势平稳，有伴者感情和谐，单身者有机会遇到心仪对象。\",\n" +
+            "  \"careerDetail\": \"事业学业运势旺盛，工作思路清晰，学习效率高，适合处理重要事务。\",\n" +
+            "  \"wealthDetail\": \"财富运势平稳，正财收入稳定，偏财运一般，建议理性消费。\",\n" +
+            "  \"healthDetail\": \"健康运势良好，精力充沛，注意规律作息，适量运动有益身心。\"\n" +
+            "}\n\n" +
             "重要要求：\n" +
-            "1. 必须包含事业、爱情、健康、财运四个方面\n" +
-            "2. 语言要温馨、积极、有指导性\n" +
-            "3. 每个方面用2-3句话描述，每句话不超过30字\n" +
-            "4. 总字数控制在300字以内\n" +
-            "5. 严格禁止使用任何Markdown格式符号，包括：#、**、*、---、-、`、[]、()等\n" +
-            "6. 不要使用emoji表情符号\n" +
-            "7. 使用纯文本格式，用换行分隔不同部分\n\n" +
-            "输出格式示例（严格按照此格式）：\n" +
-            "%s今日运势\n" +
-            "事业：今日思维清晰，适合处理细节工作。主动请教可能带来关键灵感。\n" +
-            "爱情：沟通顺畅的一天，单身者可通过共同兴趣结识朋友。\n" +
-            "健康：精力充沛，但需注意用眼疲劳。午后短暂散步能恢复最佳状态。\n" +
-            "财运：可能有小额进账或收到礼物。避免冲动消费，做好记录。\n\n" +
-            "请严格按照以上格式输出，不要添加任何额外的符号或格式。",
-            constellation, constellation
+            "1. overallScore、loveScore、careerScore、wealthScore、healthScore必须是0-100之间的整数\n" +
+            "2. luckyColor必须是中文颜色名称（如：红色、蓝色、绿色等）\n" +
+            "3. luckyNumber可以是单个数字或多个数字（如：\"7\"或\"3,8\"）\n" +
+            "4. compatibleConstellation必须是12星座之一（白羊座、金牛座、双子座、巨蟹座、狮子座、处女座、天秤座、天蝎座、射手座、摩羯座、水瓶座、双鱼座）\n" +
+            "5. suitable和avoid都是建议或避免的事项，用中文逗号分隔\n" +
+            "6. overallDetail、loveDetail、careerDetail、wealthDetail、healthDetail都是详细的运势描述，每段100-150字\n" +
+            "7. 语言要温馨、积极、有指导性\n" +
+            "8. 必须输出有效的JSON格式，不要添加任何Markdown代码块标记（如```json等）\n" +
+            "9. 只输出JSON内容，不要有任何前缀或后缀文字\n\n" +
+            "请严格按照以上格式和要求输出。",
+            constellation
         );
     }
 

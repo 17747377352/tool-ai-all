@@ -14,6 +14,7 @@ import java.time.LocalDate;
 public interface ConstellationFortuneService {
     /**
      * 根据星座和日期查询运势
+     * 
      * @param constellation 星座名称
      * @param date 日期
      * @return 星座运势实体，如果不存在返回null
@@ -22,15 +23,17 @@ public interface ConstellationFortuneService {
     
     /**
      * 保存或更新星座运势
+     * 
      * @param constellation 星座名称
      * @param date 日期
-     * @param fortuneText 运势文案
-     * @param resultUrl 结果图片URL
+     * @param fortuneText 运势文案（已废弃，可为null）
+     * @param resultData 结果数据（JSON格式字符串）
      */
-    void saveOrUpdate(String constellation, LocalDate date, String fortuneText, String resultUrl);
+    void saveOrUpdate(String constellation, LocalDate date, String fortuneText, String resultData);
     
     /**
      * 为所有12个星座生成今日运势
+     * 通常由定时任务调用，每天凌晨执行
      */
     void generateTodayFortuneForAll();
 }

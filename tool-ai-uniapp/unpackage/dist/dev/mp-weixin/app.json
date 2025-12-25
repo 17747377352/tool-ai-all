@@ -6,6 +6,7 @@
     "pages/name-sign/name-sign",
     "pages/fortune/fortune",
     "pages/constellation/constellation",
+    "pages/constellation/constellation-detail",
     "pages/result/result",
     "pages/old-photo/old-photo",
     "pages/life/life",

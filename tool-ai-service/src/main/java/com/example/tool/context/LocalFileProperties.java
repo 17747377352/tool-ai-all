@@ -22,3 +22,4 @@ public class LocalFileProperties {
     private String baseUrl = "http://localhost:8080";
 }
 
+

@@ -40,9 +40,10 @@ const _sfc_main = {
           constellation
         });
         common_vendor.index.hideLoading();
-        if (res.code === 200) {
+        if (res.code === 200 && res.data) {
+          const dataStr = encodeURIComponent(JSON.stringify(res.data));
           common_vendor.index.navigateTo({
-            url: `/pages/result/result?type=5&resultUrl=${encodeURIComponent(res.data.resultUrl)}&title=${encodeURIComponent(constellation + "今日运势")}`
+            url: `/pages/constellation/constellation-detail?data=${dataStr}`
           });
         } else {
           common_vendor.index.showToast({
@@ -53,7 +54,7 @@ const _sfc_main = {
         }
       } catch (e) {
         common_vendor.index.hideLoading();
-        common_vendor.index.__f__("error", "at pages/constellation/constellation.vue:91", "生成失败", e);
+        common_vendor.index.__f__("error", "at pages/constellation/constellation.vue:93", "生成失败", e);
         const errorMessage = e.data && e.data.message || e.message || "生成失败，请稍后再试";
         common_vendor.index.showToast({
           title: errorMessage,

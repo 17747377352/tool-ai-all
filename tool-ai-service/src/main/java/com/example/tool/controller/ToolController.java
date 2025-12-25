@@ -2,8 +2,9 @@ package com.example.tool.controller;
 
 import com.example.tool.dto.*;
 import com.example.tool.result.Result;
-import com.example.tool.service.LocalFileService;
+import com.example.tool.service.OssService;
 import com.example.tool.service.ToolService;
+import com.example.tool.vo.ConstellationFortuneVO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -29,7 +30,7 @@ import java.util.UUID;
 public class ToolController {
 
     private final ToolService toolService;
-    private final LocalFileService localFileService;
+    private final OssService ossService;
 
     /**
      * 短视频去水印接口
@@ -101,24 +102,22 @@ public class ToolController {
      * 
      * @param dto 星座运势请求参数，包含星座名称
      * @param request HTTP请求对象，用于获取用户openid（从JWT拦截器注入）
-     * @return 统一返回结果，包含生成的星座运势图片URL
+     * @return 统一返回结果，包含星座运势数据VO对象
      */
     @PostMapping("/constellation-fortune")
-    public Result<Map<String, String>> generateConstellationFortune(@RequestBody ConstellationFortuneDTO dto, HttpServletRequest request) {
+    public Result<ConstellationFortuneVO> generateConstellationFortune(@RequestBody ConstellationFortuneDTO dto, HttpServletRequest request) {
         String openid = (String) request.getAttribute("openid");
-        String resultUrl = toolService.generateConstellationFortune(openid, dto);
-        Map<String, String> result = new HashMap<>();
-        result.put("resultUrl", resultUrl);
+        ConstellationFortuneVO result = toolService.generateConstellationFortune(openid, dto);
         return Result.success(result);
     }
 
     /**
      * 图片上传接口
-     * 用于上传图片到本地存储，返回可访问的URL（用于图生图功能）
+     * 用于上传图片到OSS，返回公网可访问的URL（用于老照片修复、AI头像图生图等功能）
      * 
      * @param file 上传的图片文件
      * @param request HTTP请求对象，用于获取用户openid（从JWT拦截器注入）
-     * @return 统一返回结果，包含上传后的图片URL
+     * @return 统一返回结果，包含上传后的图片URL（OSS公网地址）
      */
     @PostMapping("/upload-image")
     public Result<Map<String, String>> uploadImage(@RequestParam("file") MultipartFile file, HttpServletRequest request) {
@@ -133,11 +132,11 @@ public class ToolController {
             if (originalFilename != null && originalFilename.contains(".")) {
                 extension = originalFilename.substring(originalFilename.lastIndexOf("."));
             }
-            String fileName = "ai-avatar/" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")) 
+            String fileName = "upload/" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")) 
                     + "/" + UUID.randomUUID().toString() + extension;
             
-            // 上传到本地存储
-            String imageUrl = localFileService.uploadFile(file.getInputStream(), fileName, file.getContentType());
+            // 上传到OSS（返回公网可访问的URL）
+            String imageUrl = ossService.uploadFile(file.getInputStream(), fileName, file.getContentType());
             
             Map<String, String> result = new HashMap<>();
             result.put("imageUrl", imageUrl);
