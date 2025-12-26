@@ -11,6 +11,11 @@ const api = {
   generateFortune: (data) => common_utils_request.request({ url: "/tool/fortune", method: "POST", data }),
   generateConstellationFortune: (data) => common_utils_request.request({ url: "/tool/constellation-fortune", method: "POST", data }),
   restoreOldPhoto: (data) => common_utils_request.request({ url: "/tool/restore-old-photo", method: "POST", data }),
+  batchRestoreOldPhoto: (data) => common_utils_request.request({ url: "/tool/batch-restore-old-photo", method: "POST", data }),
+  // 广告相关
+  recordAdWatch: (adType) => common_utils_request.request({ url: "/ad/watch?adType=" + adType, method: "POST", data: {} }),
+  checkRemoveLogoAd: () => common_utils_request.request({ url: "/ad/check-remove-logo", method: "GET" }),
+  checkBatchRestoreAd: () => common_utils_request.request({ url: "/ad/check-batch-restore", method: "GET" }),
   // 生活查询
   lifeExpress: (data) => common_utils_request.request({ url: "/life/express", method: "POST", data }),
   lifeOilPrice: (params) => common_utils_request.request({ url: "/life/oil-price", method: "GET", data: params || {} }),

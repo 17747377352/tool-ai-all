@@ -7,6 +7,7 @@ import com.example.tool.exception.BusinessException;
 import com.example.tool.mapper.GenerateRecordMapper;
 import com.example.tool.entity.ConstellationFortune;
 import com.example.tool.result.ResultCode;
+import com.example.tool.service.AdWatchService;
 import com.example.tool.service.ConstellationFortuneService;
 import com.example.tool.service.DailyLimitService;
 import com.example.tool.service.DeepSeekService;
@@ -54,6 +55,7 @@ public class ToolServiceImpl implements ToolService {
     private final LocalFileService localFileService;
     private final OssService ossService;
     private final GfpganService gfpganService;
+    private final AdWatchService adWatchService;
 
     /**
      * 聚合数据万年历（今日运势） API 密钥（Juhe）
@@ -72,21 +74,27 @@ public class ToolServiceImpl implements ToolService {
      */
     @Override
     public String removeLogo(String openid, RemoveLogoDTO dto) {
-        // 1. 检查限流
-        dailyLimitService.checkAndIncrement(openid, 1);
+        // 1. 检查广告观看状态（24小时内有效）
+        if (!adWatchService.canUseRemoveLogo(openid)) {
+            throw new BusinessException(ResultCode.TOO_MANY_REQUESTS, 
+                    "请先观看广告后使用，观看后24小时内有效");
+        }
+        
+        // 2. 检查限流（广告观看后不再受每日限流限制）
+        // dailyLimitService.checkAndIncrement(openid, 1); // 注释掉，使用广告控制
 
-        // 2. 参数校验
+        // 3. 参数校验
         if (dto.getShareUrl() == null || dto.getShareUrl().trim().isEmpty()) {
             throw new com.example.tool.exception.BusinessException(
                     com.example.tool.result.ResultCode.PARAM_ERROR, "分享链接不能为空");
         }
 
-        // 3. 调用去水印服务
+        // 4. 调用去水印服务
         log.info("开始去水印: openid={}, shareUrl={}", openid, dto.getShareUrl());
         String resultUrl = watermarkService.removeWatermark(dto.getShareUrl());
         log.info("去水印成功: openid={}, resultUrl={}", openid, resultUrl);
 
-        // 4. 保存生成记录
+        // 5. 保存生成记录
         saveGenerateRecord(openid, 1, dto, resultUrl);
 
         return resultUrl;
@@ -423,7 +431,7 @@ public class ToolServiceImpl implements ToolService {
     }
 
     /**
-     * 老照片修复（GFPGAN）
+     * 老照片修复（GFPGAN）- 单张
      *
      * @param openid 用户openid
      * @param dto    修复请求参数
@@ -431,8 +439,12 @@ public class ToolServiceImpl implements ToolService {
      */
     @Override
     public String restoreOldPhoto(String openid, OldPhotoRestoreDTO dto) {
-        // 类型6：老照片修复
-        dailyLimitService.checkAndIncrement(openid, 6);
+        // 检查是否可以使用免费的第一张
+        if (!adWatchService.consumeFirstFreeRestore(openid)) {
+            // 今天已经用过免费的第一张，需要观看广告才能使用
+            throw new BusinessException(ResultCode.TOO_MANY_REQUESTS, 
+                    "每天第一张修复免费，今天已使用。如需继续使用，请观看广告获得批量修复额度");
+        }
 
         if (dto.getImageUrl() == null || dto.getImageUrl().trim().isEmpty()) {
             throw new BusinessException(
@@ -460,6 +472,99 @@ public class ToolServiceImpl implements ToolService {
         } catch (Exception e) {
             log.error("老照片修复失败", e);
             throw new RuntimeException("老照片修复失败: " + e.getMessage(), e);
+        }
+    }
+    
+    /**
+     * 老照片批量修复（GFPGAN）
+     * 需要观看广告获得次数，每天首次免费10张
+     *
+     * @param openid 用户openid
+     * @param dto    批量修复请求参数，包含图片URL列表
+     * @return 修复后的图片URL列表（IMAGE_LIST格式）
+     */
+    @Override
+    public String batchRestoreOldPhoto(String openid, BatchRestoreOldPhotoDTO dto) {
+        if (dto.getImageUrls() == null || dto.getImageUrls().isEmpty()) {
+            throw new BusinessException(ResultCode.PARAM_ERROR, "图片列表不能为空");
+        }
+        
+        if (dto.getImageUrls().size() > 10) {
+            throw new BusinessException(ResultCode.PARAM_ERROR, "最多只能批量处理10张图片");
+        }
+        
+        int imageCount = dto.getImageUrls().size();
+        
+        // 检查今天是否已经用过免费的第一张
+        boolean canUseFirstFree = adWatchService.canUseFirstFreeRestore(openid);
+        
+        int needConsumeCount = imageCount;
+        if (canUseFirstFree) {
+            // 今天还没用过免费的第一张，第一张免费
+            needConsumeCount = imageCount - 1;
+            // 标记已使用免费的第一张
+            adWatchService.consumeFirstFreeRestore(openid);
+            log.info("批量修复使用免费第一张: openid={}, 总数量={}, 需要消费额度={}", openid, imageCount, needConsumeCount);
+        }
+        
+        // 如果除了免费第一张外还有其他图片，需要消费批量修复额度
+        if (needConsumeCount > 0) {
+            int remaining = adWatchService.consumeBatchRestoreCount(openid, needConsumeCount);
+            if (remaining < 0) {
+                throw new BusinessException(ResultCode.TOO_MANY_REQUESTS, 
+                        String.format("剩余次数不足（需要%d张额度），请观看广告获得更多次数（一次广告10张，每天第一张免费）", needConsumeCount));
+            }
+        }
+        
+        try {
+            List<String> resultUrls = new java.util.ArrayList<>();
+            Double strength = dto.getStrength() != null ? dto.getStrength() : 0.7;
+            
+            // 批量处理图片
+            for (String imageUrl : dto.getImageUrls()) {
+                if (imageUrl == null || imageUrl.trim().isEmpty()) {
+                    continue;
+                }
+                
+                try {
+                    // 调用 GFPGAN 云端修复
+                    byte[] restoredBytes = gfpganService.restore(imageUrl.trim(), strength);
+                    
+                    // 上传到OSS
+                    String fileName = "old-photo-restore/" +
+                            java.time.LocalDate.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMdd")) + "/"
+                            + java.util.UUID.randomUUID().toString() + ".png";
+                    String ossUrl = ossService.uploadFile(restoredBytes, fileName, "image/png");
+                    
+                    resultUrls.add(ossUrl);
+                } catch (Exception e) {
+                    log.error("批量修复中单张图片处理失败: imageUrl={}", imageUrl, e);
+                    // 继续处理其他图片，不中断整个流程
+                }
+            }
+            
+            if (resultUrls.isEmpty()) {
+                throw new BusinessException(ResultCode.ERROR, "所有图片处理失败，请检查图片URL是否有效");
+            }
+            
+            // 构建结果URL列表
+            String resultUrlList = resultUrls.stream()
+                    .map(url -> "\"" + url + "\"")
+                    .collect(java.util.stream.Collectors.joining(","));
+            String resultUrl = String.format("IMAGE_LIST:[%s]", resultUrlList);
+            
+            // 记录生成记录，类型6：老照片修复
+            saveGenerateRecord(openid, 6, dto, resultUrl);
+            
+            log.info("批量修复成功: openid={}, 处理数量={}, 成功数量={}", 
+                    openid, dto.getImageUrls().size(), resultUrls.size());
+            
+            return resultUrl;
+        } catch (BusinessException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("批量修复失败", e);
+            throw new RuntimeException("批量修复失败: " + e.getMessage(), e);
         }
     }
 

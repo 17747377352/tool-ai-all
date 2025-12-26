@@ -150,7 +150,7 @@ public class ToolController {
     }
 
     /**
-     * 老照片修复（GFPGAN）
+     * 老照片修复（GFPGAN）- 单张
      *
      * @param dto 请求参数，包含图片URL
      * @param request HTTP请求对象，用于获取用户openid
@@ -160,6 +160,23 @@ public class ToolController {
     public Result<Map<String, String>> restoreOldPhoto(@RequestBody OldPhotoRestoreDTO dto, HttpServletRequest request) {
         String openid = (String) request.getAttribute("openid");
         String resultUrl = toolService.restoreOldPhoto(openid, dto);
+        Map<String, String> result = new HashMap<>();
+        result.put("resultUrl", resultUrl);
+        return Result.success(result);
+    }
+
+    /**
+     * 老照片批量修复（GFPGAN）
+     * 需要观看广告获得次数，每天首次免费10张
+     *
+     * @param dto 批量修复请求参数，包含图片URL列表
+     * @param request HTTP请求对象，用于获取用户openid
+     * @return 修复后的图片URL列表
+     */
+    @PostMapping("/batch-restore-old-photo")
+    public Result<Map<String, String>> batchRestoreOldPhoto(@RequestBody BatchRestoreOldPhotoDTO dto, HttpServletRequest request) {
+        String openid = (String) request.getAttribute("openid");
+        String resultUrl = toolService.batchRestoreOldPhoto(openid, dto);
         Map<String, String> result = new HashMap<>();
         result.put("resultUrl", resultUrl);
         return Result.success(result);

@@ -59,12 +59,22 @@ public interface ToolService {
     ConstellationFortuneVO generateConstellationFortune(String openid, ConstellationFortuneDTO dto);
 
     /**
-     * 老照片修复（GFPGAN）
+     * 老照片修复（GFPGAN）- 单张
      *
      * @param openid 用户openid
      * @param dto 修复请求参数
      * @return 修复后图片URL（IMAGE_LIST 单图格式）
      */
     String restoreOldPhoto(String openid, OldPhotoRestoreDTO dto);
+    
+    /**
+     * 老照片批量修复（GFPGAN）
+     * 需要观看广告获得次数，每天首次免费10张
+     *
+     * @param openid 用户openid
+     * @param dto 批量修复请求参数，包含图片URL数组
+     * @return 修复后的图片URL列表（IMAGE_LIST格式）
+     */
+    String batchRestoreOldPhoto(String openid, BatchRestoreOldPhotoDTO dto);
 }
 

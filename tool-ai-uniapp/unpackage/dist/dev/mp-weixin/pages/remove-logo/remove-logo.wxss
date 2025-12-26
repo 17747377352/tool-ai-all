@@ -52,3 +52,21 @@
     font-size: 24rpx;
     color: #667eea;
 }
+.ad-tip.data-v-101c0d2c {
+    margin-top: 15rpx;
+    padding: 15rpx;
+    background: #fff3cd;
+    border-radius: 10rpx;
+    border-left: 4rpx solid #ffc107;
+}
+.ad-tip.success.data-v-101c0d2c {
+    background: #d4edda;
+    border-left-color: #28a745;
+}
+.ad-tip-text.data-v-101c0d2c {
+    font-size: 24rpx;
+    color: #856404;
+}
+.ad-tip.success .ad-tip-text.data-v-101c0d2c {
+    color: #155724;
+}
