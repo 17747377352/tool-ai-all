@@ -26,7 +26,10 @@ const api = {
     lifeExpress: (data) => request({ url: '/life/express', method: 'POST', data }),
     lifeOilPrice: (params) => request({ url: '/life/oil-price', method: 'GET', data: params || {} }),
     lifeForex: (params) => request({ url: '/life/forex', method: 'GET', data: params || {} }),
-    lifeLottery: (params) => request({ url: '/life/lottery', method: 'GET', data: params || {} })
+    lifeLottery: (params) => request({ url: '/life/lottery', method: 'GET', data: params || {} }),
+    
+    // 反馈
+    submitFeedback: (data) => request({ url: '/feedback/submit', method: 'POST', data })
 };
 
 export default api;

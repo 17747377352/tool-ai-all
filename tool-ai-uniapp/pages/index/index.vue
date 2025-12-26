@@ -38,6 +38,12 @@
 
         <!-- Banner广告 -->
         <ad-video-banner />
+
+        <!-- 反馈按钮（右下角浮动） -->
+        <view class="feedback-btn" @click="navigateToFeedback">
+            <text class="feedback-icon">💬</text>
+            <text class="feedback-text">反馈</text>
+        </view>
     </view>
 </template>
 
@@ -110,6 +116,11 @@ export default {
             uni.navigateTo({
                 url: pages[toolName]
             });
+        },
+        navigateToFeedback() {
+            uni.navigateTo({
+                url: '/pages/feedback/feedback'
+            });
         }
     }
 };
@@ -176,6 +187,42 @@ export default {
     display: block;
     font-size: 32rpx;
     color: #333;
+    font-weight: 500;
+}
+
+/* 反馈按钮 */
+.feedback-btn {
+    position: fixed;
+    right: 30rpx;
+    bottom: 120rpx;
+    width: 120rpx;
+    height: 120rpx;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.9) 100%);
+    border-radius: 60rpx;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.15);
+    z-index: 999;
+    transition: all 0.3s;
+    backdrop-filter: blur(10rpx);
+}
+
+.feedback-btn:active {
+    transform: scale(0.9);
+    box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.2);
+}
+
+.feedback-icon {
+    font-size: 48rpx;
+    line-height: 1;
+    margin-bottom: 8rpx;
+}
+
+.feedback-text {
+    font-size: 22rpx;
+    color: #667eea;
     font-weight: 500;
 }
 </style>

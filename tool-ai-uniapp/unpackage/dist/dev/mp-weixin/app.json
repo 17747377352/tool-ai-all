@@ -10,7 +10,8 @@
     "pages/result/result",
     "pages/old-photo/old-photo",
     "pages/life/life",
-    "pages/user/user"
+    "pages/user/user",
+    "pages/feedback/feedback"
   ],
   "window": {
     "navigationBarTextStyle": "black",

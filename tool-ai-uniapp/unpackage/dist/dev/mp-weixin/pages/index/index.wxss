@@ -53,3 +53,37 @@
     color: #333;
     font-weight: 500;
 }
+
+/* 反馈按钮 */
+.feedback-btn.data-v-1cf27b2a {
+    position: fixed;
+    right: 30rpx;
+    bottom: 120rpx;
+    width: 120rpx;
+    height: 120rpx;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.9) 100%);
+    border-radius: 60rpx;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.15);
+    z-index: 999;
+    transition: all 0.3s;
+    -webkit-backdrop-filter: blur(10rpx);
+            backdrop-filter: blur(10rpx);
+}
+.feedback-btn.data-v-1cf27b2a:active {
+    transform: scale(0.9);
+    box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.2);
+}
+.feedback-icon.data-v-1cf27b2a {
+    font-size: 48rpx;
+    line-height: 1;
+    margin-bottom: 8rpx;
+}
+.feedback-text.data-v-1cf27b2a {
+    font-size: 22rpx;
+    color: #667eea;
+    font-weight: 500;
+}

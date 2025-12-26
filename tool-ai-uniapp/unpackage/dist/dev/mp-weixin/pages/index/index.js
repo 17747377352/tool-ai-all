@@ -63,6 +63,11 @@ const _sfc_main = {
       common_vendor.index.navigateTo({
         url: pages[toolName]
       });
+    },
+    navigateToFeedback() {
+      common_vendor.index.navigateTo({
+        url: "/pages/feedback/feedback"
+      });
     }
   }
 };
@@ -78,7 +83,8 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
     d: common_vendor.o(($event) => $options.navigateToTool("fortune")),
     e: common_vendor.o(($event) => $options.navigateToTool("constellation")),
     f: common_vendor.o(($event) => $options.navigateToTool("old-photo")),
-    g: common_vendor.o(($event) => $options.navigateToTool("life"))
+    g: common_vendor.o(($event) => $options.navigateToTool("life")),
+    h: common_vendor.o((...args) => $options.navigateToFeedback && $options.navigateToFeedback(...args))
   });
 }
 const MiniProgramPage = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["render", _sfc_render], ["__scopeId", "data-v-1cf27b2a"]]);

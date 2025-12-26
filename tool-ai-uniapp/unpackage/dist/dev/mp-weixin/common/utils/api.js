@@ -20,7 +20,9 @@ const api = {
   lifeExpress: (data) => common_utils_request.request({ url: "/life/express", method: "POST", data }),
   lifeOilPrice: (params) => common_utils_request.request({ url: "/life/oil-price", method: "GET", data: params || {} }),
   lifeForex: (params) => common_utils_request.request({ url: "/life/forex", method: "GET", data: params || {} }),
-  lifeLottery: (params) => common_utils_request.request({ url: "/life/lottery", method: "GET", data: params || {} })
+  lifeLottery: (params) => common_utils_request.request({ url: "/life/lottery", method: "GET", data: params || {} }),
+  // 反馈
+  submitFeedback: (data) => common_utils_request.request({ url: "/feedback/submit", method: "POST", data })
 };
 exports.api = api;
 //# sourceMappingURL=../../../.sourcemap/mp-weixin/common/utils/api.js.map

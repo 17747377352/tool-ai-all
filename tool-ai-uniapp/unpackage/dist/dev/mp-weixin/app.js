@@ -14,6 +14,7 @@ if (!Math) {
   "./pages/old-photo/old-photo.js";
   "./pages/life/life.js";
   "./pages/user/user.js";
+  "./pages/feedback/feedback.js";
 }
 const _sfc_main = {
   __name: "App",
