@@ -22,7 +22,9 @@ const api = {
   lifeForex: (params) => common_utils_request.request({ url: "/life/forex", method: "GET", data: params || {} }),
   lifeLottery: (params) => common_utils_request.request({ url: "/life/lottery", method: "GET", data: params || {} }),
   // 反馈
-  submitFeedback: (data) => common_utils_request.request({ url: "/feedback/submit", method: "POST", data })
+  submitFeedback: (data) => common_utils_request.request({ url: "/feedback/submit", method: "POST", data }),
+  // OnlyOffice 协同编辑
+  getOnlyOfficeConfig: (fileName) => common_utils_request.request({ url: "/onlyoffice/config?fileName=" + encodeURIComponent(fileName || "demo.docx"), method: "GET" })
 };
 exports.api = api;
 //# sourceMappingURL=../../../.sourcemap/mp-weixin/common/utils/api.js.map

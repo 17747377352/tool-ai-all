@@ -11,7 +11,8 @@
     "pages/old-photo/old-photo",
     "pages/life/life",
     "pages/user/user",
-    "pages/feedback/feedback"
+    "pages/feedback/feedback",
+    "pages/onlyoffice/onlyoffice"
   ],
   "window": {
     "navigationBarTextStyle": "black",

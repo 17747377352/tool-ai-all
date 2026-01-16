@@ -10,10 +10,10 @@
 
 // 后端服务基础地址
 // 开发环境
-const BASE_URL = 'http://localhost:8080';
+// const BASE_URL = 'http://localhost:8080';
 
 // 生产环境（部署时取消注释并修改）
-// const BASE_URL = 'http://123.56.22.101:38080';
+const BASE_URL = 'https://www.songtop.xyz/api';
 
 export default {
     BASE_URL

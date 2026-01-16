@@ -15,6 +15,7 @@ if (!Math) {
   "./pages/life/life.js";
   "./pages/user/user.js";
   "./pages/feedback/feedback.js";
+  "./pages/onlyoffice/onlyoffice.js";
 }
 const _sfc_main = {
   __name: "App",
@@ -29,13 +30,8 @@ const _sfc_main = {
     common_vendor.onHide(() => {
       common_vendor.index.__f__("log", "at App.vue:21", "App Hide");
     });
-    async function initLogin() {
+    async function doLogin() {
       try {
-        const existingToken = common_vendor.index.getStorageSync("token");
-        if (existingToken) {
-          common_vendor.index.__f__("log", "at App.vue:30", "已有token，跳过登录");
-          return;
-        }
         const code = await getWxCode();
         const res = await common_vendor.index.request({
           url: `${common_config_apiConfig.apiConfig.BASE_URL}/auth/wx-login`,
@@ -45,13 +41,20 @@ const _sfc_main = {
         if (res.data && res.data.code === 200) {
           common_vendor.index.setStorageSync("token", res.data.data.token);
           common_vendor.index.setStorageSync("openid", res.data.data.openid);
-          common_vendor.index.__f__("log", "at App.vue:43", "登录成功，token已保存");
+          common_vendor.index.__f__("log", "at App.vue:35", "登录成功，token已保存");
+          return true;
         } else {
-          common_vendor.index.__f__("warn", "at App.vue:45", "登录失败:", res.data);
+          common_vendor.index.__f__("warn", "at App.vue:38", "登录失败:", res.data);
+          return false;
         }
       } catch (e) {
-        common_vendor.index.__f__("error", "at App.vue:48", "登录失败", e);
+        common_vendor.index.__f__("error", "at App.vue:42", "登录失败", e);
+        return false;
       }
+    }
+    async function initLogin() {
+      common_vendor.index.__f__("log", "at App.vue:50", "开始初始化登录...");
+      await doLogin();
     }
     function getWxCode() {
       return new Promise((resolve, reject) => {

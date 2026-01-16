@@ -118,6 +118,7 @@ public class FortuneImageServiceImpl implements FortuneImageService {
                 log.warn("内容超出图片范围，已截断");
                 break;
             }
+            log.info("line.text: {}", line.text);
             
             // 设置字体和颜色
             if (line.isSection) {

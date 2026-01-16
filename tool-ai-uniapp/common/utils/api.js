@@ -29,7 +29,10 @@ const api = {
     lifeLottery: (params) => request({ url: '/life/lottery', method: 'GET', data: params || {} }),
     
     // 反馈
-    submitFeedback: (data) => request({ url: '/feedback/submit', method: 'POST', data })
+    submitFeedback: (data) => request({ url: '/feedback/submit', method: 'POST', data }),
+    
+    // OnlyOffice 协同编辑
+    getOnlyOfficeConfig: (fileName) => request({ url: '/onlyoffice/config?fileName=' + encodeURIComponent(fileName || 'demo.docx'), method: 'GET' })
 };
 
 export default api;

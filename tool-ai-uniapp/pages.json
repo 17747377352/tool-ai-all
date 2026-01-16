@@ -101,6 +101,14 @@
                 "navigationBarBackgroundColor": "#ffffff",
                 "navigationBarTextStyle": "black"
             }
+        },
+        {
+            "path": "pages/onlyoffice/onlyoffice",
+            "style": {
+                "navigationBarTitleText": "协同编辑",
+                "navigationBarBackgroundColor": "#ffffff",
+                "navigationBarTextStyle": "black"
+            }
         }
     ],
     "globalStyle": {

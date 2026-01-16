@@ -38,7 +38,7 @@ start() {
     echo "正在启动 $APP_NAME..."
     cd "$APP_HOME"
     # 将标准输出重定向到 /dev/null，因为 Spring Boot 内部已配置日志写入 tool.log
-    nohup java -jar "$JAR_NAME" > /dev/null 2>&1 &
+    nohup java  -Dfile.encoding=UTF-8 -jar "$JAR_NAME" > /dev/null 2>&1 &
     echo $! > "$PID_FILE"
     echo "$APP_NAME 已启动 (PID: $(cat "$PID_FILE"))"
     echo "可通过以下命令查看实时日志: tail -f $MAIN_LOG"

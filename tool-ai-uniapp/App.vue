@@ -21,16 +21,8 @@ onHide(() => {
     console.log('App Hide')
 })
 
-async function initLogin() {
-    // 静默登录
+async function doLogin() {
     try {
-        // 检查是否已有token
-        const existingToken = uni.getStorageSync('token')
-        if (existingToken) {
-            console.log('已有token，跳过登录')
-            return
-        }
-
         const code = await getWxCode()
         const res = await uni.request({
             url: `${apiConfig.BASE_URL}/auth/wx-login`,
@@ -41,12 +33,22 @@ async function initLogin() {
             uni.setStorageSync('token', res.data.data.token)
             uni.setStorageSync('openid', res.data.data.openid)
             console.log('登录成功，token已保存')
+            return true
         } else {
             console.warn('登录失败:', res.data)
+            return false
         }
     } catch (e) {
         console.error('登录失败', e)
+        return false
     }
+}
+
+async function initLogin() {
+    // 静默登录 - 每次启动都重新登录以确保token有效
+    // 微信登录是静默的，不会影响用户体验
+    console.log('开始初始化登录...')
+    await doLogin()
 }
 
 function getWxCode() {
