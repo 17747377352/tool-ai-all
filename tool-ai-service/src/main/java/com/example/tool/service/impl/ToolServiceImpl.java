@@ -440,11 +440,11 @@ public class ToolServiceImpl implements ToolService {
     @Override
     public String restoreOldPhoto(String openid, OldPhotoRestoreDTO dto) {
         // 检查是否可以使用免费的第一张
-        if (!adWatchService.consumeFirstFreeRestore(openid)) {
-            // 今天已经用过免费的第一张，需要观看广告才能使用
-            throw new BusinessException(ResultCode.TOO_MANY_REQUESTS, 
-                    "每天第一张修复免费，今天已使用。如需继续使用，请观看广告获得批量修复额度");
-        }
+//        if (!adWatchService.consumeFirstFreeRestore(openid)) {
+//            // 今天已经用过免费的第一张，需要观看广告才能使用
+//            throw new BusinessException(ResultCode.TOO_MANY_REQUESTS,
+//                    "每天第一张修复免费，今天已使用。如需继续使用，请观看广告获得批量修复额度");
+//        }
 
         if (dto.getImageUrl() == null || dto.getImageUrl().trim().isEmpty()) {
             throw new BusinessException(

@@ -1,0 +1,94 @@
+
+.container.data-v-62b32c48 {
+    min-height: 100vh;
+    background: #f5f5f5;
+    padding: 30rpx;
+}
+.form-card.data-v-62b32c48 {
+    background: #fff;
+    border-radius: 20rpx;
+    padding: 30rpx;
+}
+.form-item.data-v-62b32c48 {
+    margin-bottom: 30rpx;
+}
+.label.data-v-62b32c48 {
+    display: block;
+    font-size: 28rpx;
+    color: #333;
+    margin-bottom: 20rpx;
+    font-weight: 500;
+}
+.upload-area.data-v-62b32c48 {
+    width: 100%;
+    min-height: 300rpx;
+    background: #f5f5f5;
+    border-radius: 10rpx;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2rpx dashed #ddd;
+}
+.preview-image.data-v-62b32c48 {
+    width: 100%;
+    max-height: 500rpx;
+    border-radius: 10rpx;
+}
+.upload-placeholder.data-v-62b32c48 {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40rpx;
+}
+.upload-icon.data-v-62b32c48 {
+    font-size: 80rpx;
+    margin-bottom: 20rpx;
+}
+.upload-text.data-v-62b32c48 {
+    font-size: 28rpx;
+    color: #999;
+}
+.recognizing.data-v-62b32c48, .translating.data-v-62b32c48 {
+    padding: 40rpx;
+    text-align: center;
+    color: #999;
+}
+.recognition-result.data-v-62b32c48, .translation-result.data-v-62b32c48 {
+    background: #f5f5f5;
+    border-radius: 10rpx;
+    padding: 20rpx;
+    min-height: 150rpx;
+}
+.result-text.data-v-62b32c48 {
+    font-size: 28rpx;
+    color: #333;
+    line-height: 1.6;
+}
+.language-selector.data-v-62b32c48 {
+    margin-bottom: 20rpx;
+}
+.picker-view.data-v-62b32c48 {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20rpx;
+    background: #f5f5f5;
+    border-radius: 10rpx;
+}
+.picker-arrow.data-v-62b32c48 {
+    color: #999;
+}
+.recognize-btn.data-v-62b32c48, .translate-btn.data-v-62b32c48 {
+    width: 100%;
+    height: 88rpx;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    border-radius: 44rpx;
+    font-size: 32rpx;
+    border: none;
+    margin-top: 20rpx;
+}
+.recognize-btn[disabled].data-v-62b32c48, .translate-btn[disabled].data-v-62b32c48 {
+    background: #ccc;
+}

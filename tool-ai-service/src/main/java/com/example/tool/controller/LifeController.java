@@ -12,6 +12,10 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
+import java.util.List;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * 生活查询控制器
@@ -55,7 +59,29 @@ public class LifeController {
     public Result<LotteryVO> lottery(@RequestParam(value = "type", required = false) String type) {
         return Result.success(lifeService.queryLottery(type));
     }
+
+
+    public  static  final List<Pattern> AA=Stream.
+            of(Pattern.compile("--|\\.|,|<|\\s|sst",
+                    Pattern.CASE_INSENSITIVE| Pattern.MULTILINE|Pattern.DOTALL)).collect(Collectors.toList());
+
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

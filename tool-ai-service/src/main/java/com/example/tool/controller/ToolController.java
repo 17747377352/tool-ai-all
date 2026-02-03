@@ -3,6 +3,7 @@ package com.example.tool.controller;
 import com.example.tool.dto.*;
 import com.example.tool.result.Result;
 import com.example.tool.service.OssService;
+import com.example.tool.service.AliyunAsrService;
 import com.example.tool.service.ToolService;
 import com.example.tool.vo.ConstellationFortuneVO;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +32,7 @@ public class ToolController {
 
     private final ToolService toolService;
     private final OssService ossService;
+    private final AliyunAsrService aliyunAsrService;
 
     /**
      * 短视频去水印接口
@@ -146,6 +148,32 @@ public class ToolController {
             return Result.error("图片上传失败: " + e.getMessage());
         } catch (Exception e) {
             return Result.error("图片上传失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 提交语音转写任务（异步模式）
+     * 提交任务后立即返回 taskId，识别结果通过回调接口返回
+     *
+     * @param file       上传的音频文件（支持 pcm/wav/opus）
+     * @param format     音频格式，可选，为空时使用默认配置
+     * @param sampleRate 采样率，可选，为空时使用默认配置
+     * @return 统一返回结果，包含 code, message, taskId
+     */
+    @PostMapping("/asr/submit-task")
+    public SubmitTaskResponse submitAsrTask(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam(value = "format", required = false) String format,
+            @RequestParam(value = "sampleRate", required = false) Integer sampleRate) {
+        try {
+            if (file == null || file.isEmpty()) {
+                return new SubmitTaskResponse(500, "文件不能为空", null);
+            }
+            SubmitTaskResponse response = aliyunAsrService.submitTask(file, format, sampleRate);
+            return response;
+
+        } catch (Exception e) {
+            return new SubmitTaskResponse(500, "提交任务异常: " + e.getMessage(), null);
         }
     }
 

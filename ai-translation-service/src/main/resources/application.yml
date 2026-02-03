@@ -1,0 +1,8 @@
+server:
+  port: 18090
+
+spring:
+  profiles:
+    active: dev
+  application:
+    name: ai-translation-service

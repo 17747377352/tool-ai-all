@@ -1,0 +1,102 @@
+
+.container.data-v-b2af8d61 {
+    min-height: 100vh;
+    background: #f5f5f5;
+    padding: 30rpx;
+}
+.form-card.data-v-b2af8d61 {
+    background: #fff;
+    border-radius: 20rpx;
+    padding: 30rpx;
+    margin-bottom: 30rpx;
+}
+.form-item.data-v-b2af8d61 {
+    margin-bottom: 30rpx;
+}
+.form-item.data-v-b2af8d61:last-child {
+    margin-bottom: 0;
+}
+.label.data-v-b2af8d61 {
+    display: block;
+    font-size: 28rpx;
+    color: #333;
+    margin-bottom: 20rpx;
+    font-weight: 500;
+}
+.language-options.data-v-b2af8d61 {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15rpx;
+}
+.lang-item.data-v-b2af8d61 {
+    padding: 15rpx 30rpx;
+    background: #f5f5f5;
+    border-radius: 30rpx;
+    font-size: 26rpx;
+    color: #666;
+    border: 2rpx solid transparent;
+}
+.lang-item.active.data-v-b2af8d61 {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    border-color: #667eea;
+}
+.textarea.data-v-b2af8d61 {
+    width: 100%;
+    min-height: 200rpx;
+    background: #f5f5f5;
+    border-radius: 10rpx;
+    padding: 20rpx;
+    font-size: 28rpx;
+    box-sizing: border-box;
+}
+.translate-btn.data-v-b2af8d61 {
+    width: 100%;
+    height: 88rpx;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    border-radius: 44rpx;
+    font-size: 32rpx;
+    border: none;
+    margin-top: 20rpx;
+}
+.translate-btn[disabled].data-v-b2af8d61 {
+    background: #ccc;
+}
+.result-card.data-v-b2af8d61 {
+    background: #fff;
+    border-radius: 20rpx;
+    padding: 30rpx;
+}
+.result-header.data-v-b2af8d61 {
+    margin-bottom: 20rpx;
+}
+.result-title.data-v-b2af8d61 {
+    font-size: 32rpx;
+    font-weight: bold;
+    color: #333;
+}
+.result-content.data-v-b2af8d61 {
+    background: #f5f5f5;
+    border-radius: 10rpx;
+    padding: 20rpx;
+    margin-bottom: 20rpx;
+    min-height: 150rpx;
+}
+.result-text.data-v-b2af8d61 {
+    font-size: 28rpx;
+    color: #333;
+    line-height: 1.6;
+}
+.result-actions.data-v-b2af8d61 {
+    display: flex;
+    justify-content: flex-end;
+}
+.copy-btn.data-v-b2af8d61 {
+    padding: 15rpx 40rpx;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    border-radius: 30rpx;
+    font-size: 26rpx;
+    border: none;
+}

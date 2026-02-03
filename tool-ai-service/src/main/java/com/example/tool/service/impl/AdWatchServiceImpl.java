@@ -149,7 +149,6 @@ public class AdWatchServiceImpl implements AdWatchService {
             // 不是今天，重置为0（新的一天需要重新观看广告）
             return 0;
         }
-        
         // 今天已有记录，返回剩余次数（观看广告获得的额度）
         return record.getRemainingCount() != null ? record.getRemainingCount() : 0;
     }

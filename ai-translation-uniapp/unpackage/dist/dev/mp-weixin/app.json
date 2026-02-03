@@ -1,0 +1,23 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/translate/translate",
+    "pages/old-photo/old-photo",
+    "pages/image-to-image/image-to-image",
+    "pages/image-generate/image-generate",
+    "pages/image-generate/template-list",
+    "pages/image-generate/task-list",
+    "pages/image-recognition/image-recognition",
+    "pages/mongolian-chat/mongolian-chat",
+    "pages/result/result",
+    "pages/user/user",
+    "pages/feedback/feedback"
+  ],
+  "window": {
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "AI翻译工具",
+    "navigationBarBackgroundColor": "#ffffff",
+    "backgroundColor": "#f5f5f5"
+  },
+  "usingComponents": {}
+}

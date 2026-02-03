@@ -32,7 +32,9 @@ public class WebMvcConfig implements WebMvcConfigurer {
             "/proxy/**", // 外部图片代理接口（兼容旧版本）
             "/api/image/**", // 本地图片代理接口，允许匿名访问
             "/test/**", // 测试接口，允许匿名访问
-            "/onlyoffice/**" // OnlyOffice 接口，允许匿名访问（OnlyOffice Document Server 需要访问）
+            "/onlyoffice/**", // OnlyOffice 接口，允许匿名访问（OnlyOffice Document Server 需要访问）
+            "/tool/asr/recognize-file/**",
+            "/tool/asr/submit-task/**"
     );
 
     @Override

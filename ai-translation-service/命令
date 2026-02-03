@@ -1,0 +1,5 @@
+修改配置	vi /etc/nginx/sites-available/songtop.xyz
+测试语法	nginx -t
+重载配置	systemctl reload nginx
+
+
