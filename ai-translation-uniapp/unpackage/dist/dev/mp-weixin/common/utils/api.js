@@ -57,8 +57,10 @@ const api = {
   }),
   getTaskDetail: (taskId) => common_utils_request.request({ url: `/tool/task/${taskId}`, method: "GET" }),
   downloadImage: (taskId) => common_utils_request.request({ url: `/tool/task/${taskId}/download`, method: "GET" }),
-  // 蒙古语 AI 对话（千问 + 小牛翻译）
+  // 蒙古语 AI 对话
   mongolianChat: (data) => common_utils_request.request({ url: "/api/ai/mongolian-chat", method: "POST", data }),
+  // AI 识图
+  imageRecognize: (data) => common_utils_request.request({ url: "/tool/image-recognize", method: "POST", data }),
   // 反馈
   submitFeedback: (data) => common_utils_request.request({ url: "/feedback/submit", method: "POST", data })
 };

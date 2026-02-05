@@ -68,8 +68,11 @@ const api = {
     getTaskDetail: (taskId) => request({ url: `/tool/task/${taskId}`, method: 'GET' }),
     downloadImage: (taskId) => request({ url: `/tool/task/${taskId}/download`, method: 'GET' }),
     
-    // 蒙古语 AI 对话（千问 + 小牛翻译）
+    // 蒙古语 AI 对话
     mongolianChat: (data) => request({ url: '/api/ai/mongolian-chat', method: 'POST', data }),
+    
+    // AI 识图
+    imageRecognize: (data) => request({ url: '/tool/image-recognize', method: 'POST', data }),
     
     // 反馈
     submitFeedback: (data) => request({ url: '/feedback/submit', method: 'POST', data })

@@ -20,6 +20,11 @@ public class DoubaoProperties {
      */
     private String model;
 
+    /**
+     * 豆包视觉理解模型名（图像理解/多模态
+     */
+    private String visionModel = "doubao-1.5-vision-pro-32k";
+
     private Integer defaultN = 1;
     private String defaultSize = "1024x1024";
 
@@ -45,6 +50,14 @@ public class DoubaoProperties {
 
     public void setModel(String model) {
         this.model = model;
+    }
+
+    public String getVisionModel() {
+        return visionModel;
+    }
+
+    public void setVisionModel(String visionModel) {
+        this.visionModel = visionModel;
     }
 
     public Integer getDefaultN() {

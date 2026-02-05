@@ -74,11 +74,12 @@ export default {
             translationResult: '',
             recognizing: false,
             translating: false,
-            selectedTargetLang: { label: '英文', value: 'en' },
+            // 默认翻译目标语言改为蒙文
+            selectedTargetLang: { label: '蒙文', value: 'mo' },
             targetLanguages: [
+                { label: '蒙文', value: 'mo' },
                 { label: '英文', value: 'en' },
                 { label: '日文', value: 'ja' },
-                { label: '蒙文', value: 'mo' },
                 { label: '中文', value: 'zh' }
             ]
         };
@@ -134,12 +135,27 @@ export default {
         },
         
         async recognize() {
-            // TODO: 调用AI识图接口（后端还未实现）
+            if (!this.imageUrl) {
+                uni.showToast({
+                    title: '请先上传图片',
+                    icon: 'none'
+                });
+                return;
+            }
             this.recognizing = true;
+            this.recognitionResult = '';
             try {
-                // 模拟识别结果
-                await new Promise(resolve => setTimeout(resolve, 2000));
-                this.recognitionResult = '这是一张图片，包含文字内容...（AI识图功能后端待开发）';
+                const res = await api.imageRecognize({
+                    imageUrl: this.imageUrl
+                });
+                if (res.code === 200 && res.data && res.data.text) {
+                    this.recognitionResult = res.data.text;
+                } else {
+                    uni.showToast({
+                        title: res.message || '识别失败，请重试',
+                        icon: 'none'
+                    });
+                }
             } catch (e) {
                 console.error('识别失败', e);
                 uni.showToast({

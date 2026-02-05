@@ -26,7 +26,8 @@ public class ImageGenerateTaskScheduler {
      * 定时扫描待处理任务并执行
      * fixedDelay：上一次执行结束后间隔指定毫秒再次执行
      */
-    @Scheduled(fixedDelay = 5000)
+//    @Scheduled(fixedDelay = 5000)// 每5秒执行一次
+    @Scheduled(fixedDelay = 20000)// 每20秒执行一次
     public void processPendingTasks() {
         List<ImageGenerateTask> pendingTasks = imageGenerateTaskService.getPendingTasks();
         if (pendingTasks == null || pendingTasks.isEmpty()) {
@@ -34,7 +35,6 @@ public class ImageGenerateTaskScheduler {
         }
 
         log.info("图片生成调度器：本轮待处理任务数量={}", pendingTasks.size());
-
         // 简单起见，这里顺序处理所有排队任务
         for (ImageGenerateTask task : pendingTasks) {
             try {

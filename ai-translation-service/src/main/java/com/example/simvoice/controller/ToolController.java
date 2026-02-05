@@ -4,6 +4,7 @@ import com.example.simvoice.dto.*;
 import com.example.simvoice.entity.ImageGenerateTask;
 import com.example.simvoice.entity.ImageTemplate;
 import com.example.simvoice.result.Result;
+import com.example.simvoice.service.DoubaoVisionService;
 import com.example.simvoice.service.ImageGenerateTaskService;
 import com.example.simvoice.service.ImageTemplateService;
 import com.example.simvoice.service.OssService;
@@ -40,6 +41,7 @@ public class ToolController {
     private final StsService stsService;
     private final ImageTemplateService imageTemplateService;
     private final ImageGenerateTaskService imageGenerateTaskService;
+    private final DoubaoVisionService doubaoVisionService;
 
     /**
      * AI头像生成接口
@@ -370,6 +372,31 @@ public class ToolController {
         Map<String, String> result = new HashMap<>();
         result.put("downloadUrl", task.getResultUrl());
         result.put("taskId", String.valueOf(taskId));
+        return Result.success(result);
+    }
+
+    /**
+     * AI 识图接口：使用火山引擎识别图片中的文字并提炼为中文说明
+     *
+     * 请求体示例：
+     * {
+     *   "imageUrl": "https://xxx.oss-cn-beijing.aliyuncs.com/path/to/image.jpg"
+     * }
+     */
+    @PostMapping("/image-recognize")
+    public Result<Map<String, String>> recognizeImage(@RequestBody Map<String, Object> body, HttpServletRequest request) {
+        String openid = (String) request.getAttribute("openid");
+        if (openid == null || openid.isEmpty()) {
+            return Result.unauthorized();
+        }
+        Object urlObj = body.get("imageUrl");
+        String imageUrl = urlObj == null ? null : String.valueOf(urlObj).trim();
+        if (imageUrl == null || imageUrl.isEmpty()) {
+            return Result.error("图片地址不能为空");
+        }
+        String text = doubaoVisionService.understandImage(imageUrl, "图片主要讲了什么？请用简洁的中文总结。");
+        Map<String, String> result = new HashMap<>();
+        result.put("text", text);
         return Result.success(result);
     }
 }

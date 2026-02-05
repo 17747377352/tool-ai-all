@@ -11,11 +11,12 @@ const _sfc_main = {
       translationResult: "",
       recognizing: false,
       translating: false,
-      selectedTargetLang: { label: "英文", value: "en" },
+      // 默认翻译目标语言改为蒙文
+      selectedTargetLang: { label: "蒙文", value: "mo" },
       targetLanguages: [
+        { label: "蒙文", value: "mo" },
         { label: "英文", value: "en" },
         { label: "日文", value: "ja" },
-        { label: "蒙文", value: "mo" },
         { label: "中文", value: "zh" }
       ]
     };
@@ -34,7 +35,7 @@ const _sfc_main = {
           this.translationResult = "";
         },
         fail: (err) => {
-          common_vendor.index.__f__("error", "at pages/image-recognition/image-recognition.vue:101", "选择图片失败", err);
+          common_vendor.index.__f__("error", "at pages/image-recognition/image-recognition.vue:102", "选择图片失败", err);
           common_vendor.index.showToast({
             title: "选择图片失败",
             icon: "none"
@@ -54,7 +55,7 @@ const _sfc_main = {
         this.imageUrl = imageUrl;
         common_vendor.index.hideLoading();
       } catch (e) {
-        common_vendor.index.__f__("error", "at pages/image-recognition/image-recognition.vue:125", "上传图片失败", e);
+        common_vendor.index.__f__("error", "at pages/image-recognition/image-recognition.vue:126", "上传图片失败", e);
         common_vendor.index.hideLoading();
         common_vendor.index.showToast({
           title: e.message || "上传图片失败",
@@ -65,12 +66,29 @@ const _sfc_main = {
       }
     },
     async recognize() {
+      if (!this.imageUrl) {
+        common_vendor.index.showToast({
+          title: "请先上传图片",
+          icon: "none"
+        });
+        return;
+      }
       this.recognizing = true;
+      this.recognitionResult = "";
       try {
-        await new Promise((resolve) => setTimeout(resolve, 2e3));
-        this.recognitionResult = "这是一张图片，包含文字内容...（AI识图功能后端待开发）";
+        const res = await common_utils_api.api.imageRecognize({
+          imageUrl: this.imageUrl
+        });
+        if (res.code === 200 && res.data && res.data.text) {
+          this.recognitionResult = res.data.text;
+        } else {
+          common_vendor.index.showToast({
+            title: res.message || "识别失败，请重试",
+            icon: "none"
+          });
+        }
       } catch (e) {
-        common_vendor.index.__f__("error", "at pages/image-recognition/image-recognition.vue:144", "识别失败", e);
+        common_vendor.index.__f__("error", "at pages/image-recognition/image-recognition.vue:160", "识别失败", e);
         common_vendor.index.showToast({
           title: "识别失败，请重试",
           icon: "none"
@@ -104,7 +122,7 @@ const _sfc_main = {
           });
         }
       } catch (e) {
-        common_vendor.index.__f__("error", "at pages/image-recognition/image-recognition.vue:181", "翻译失败", e);
+        common_vendor.index.__f__("error", "at pages/image-recognition/image-recognition.vue:197", "翻译失败", e);
         common_vendor.index.showToast({
           title: "翻译失败，请重试",
           icon: "none"

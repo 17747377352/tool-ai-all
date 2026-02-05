@@ -2,23 +2,23 @@ package com.example.simvoice.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-@ConfigurationProperties(prefix = "ai.qwen")
-public class QwenProperties {
+@ConfigurationProperties(prefix = "ai.kimi")
+public class KimiProperties {
     /**
-     * DashScope API Key（建议用环境变量 DASHSCOPE_API_KEY 注入）
+     * Moonshot API Key（建议用环境变量 MOONSHOT_API_KEY 注入）
      */
     private String apiKey;
 
     /**
      * OpenAI 兼容模式 base url
-     * 默认：DashScope compatible-mode
+     * 默认：Moonshot API
      */
-    private String baseUrl = "https://dashscope.aliyuncs.com/compatible-mode/v1";
+    private String baseUrl = "https://api.moonshot.cn/v1";
 
     /**
-     * 模型名（示例：qwen-plus / qwen-turbo 等）
+     * 模型名，示例：kimi-latest
      */
-    private String model = "qwen-plus";
+    private String model = "kimi-latest";
 
     public String getApiKey() {
         return apiKey;
@@ -44,6 +44,4 @@ public class QwenProperties {
         this.model = model;
     }
 }
-
-
 

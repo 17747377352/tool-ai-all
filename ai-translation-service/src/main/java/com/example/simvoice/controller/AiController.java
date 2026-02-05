@@ -2,49 +2,64 @@ package com.example.simvoice.controller;
 
 import com.example.simvoice.dto.MongolianChatDTO;
 import com.example.simvoice.service.DoubaoImageService;
-import com.example.simvoice.service.QwenService;
+import com.example.simvoice.service.KimiService;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @RestController
 @RequestMapping("/api/ai")
 public class AiController {
-    private final QwenService qwenService;
+    private final KimiService kimiService;
     private final DoubaoImageService doubaoImageService;
 
-    public AiController(QwenService qwenService,
+    public AiController(KimiService kimiService,
                         DoubaoImageService doubaoImageService) {
-        this.qwenService = qwenService;
+        this.kimiService = kimiService;
         this.doubaoImageService = doubaoImageService;
     }
 
     /**
-     * 千问对话（OpenAI compatible chat/completions）
+     * Kimi 对话（Moonshot OpenAI compatible chat/completions）
      * body 示例：
-     * {"prompt":"你好","system":"你是一个助手","model":"qwen-plus","temperature":0.7,"maxTokens":1024}
+     * {"prompt":"你好","system":"你是一个助手","model":"kimi-latest","temperature":0.7,"maxTokens":1024,"enableWebSearch":true,"searchMode":"accurate"}
      */
-    @PostMapping("/qwen/chat")
-    public Map<String, Object> qwenChat(@RequestBody Map<String, Object> body) {
+    @PostMapping("/kimi/chat")
+    public Map<String, Object> kimiChat(@RequestBody Map<String, Object> body, HttpServletRequest request) {
         String prompt = str(body.get("prompt"));
         String system = str(body.get("system"));
         String model = str(body.get("model"));
         Double temperature = num(body.get("temperature"));
         Integer maxTokens = intNum(body.get("maxTokens"));
+        Boolean enableWebSearch = body.get("enableWebSearch") instanceof Boolean ? (Boolean) body.get("enableWebSearch") : null;
+        String searchMode = str(body.get("searchMode"));
 
-        Map<String, Object> raw = qwenService.chat(prompt, system, model, temperature, maxTokens);
+        Map<String, Object> raw = kimiService.chat(prompt, system, model, temperature, maxTokens, enableWebSearch, searchMode);
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("code", 200);
         result.put("message", "ok");
-        result.put("content", extractChatContent(raw));
+        String content = extractChatContent(raw);
+        result.put("content", content);
         result.put("raw", raw);
+
+        // 日志记录 Kimi 对话问答
+        String openid = request != null ? (String) request.getAttribute("openid") : null;
+        log.info("AI 对话[Kimi] openid={}, model={}, prompt={}, answer={}",
+                openid,
+                model != null ? model : "default",
+                truncate(prompt, 500),
+                truncate(content, 500));
         return result;
     }
 
     /**
-     * 蒙古语 AI 对话
+     * 蒙古语 AI 对话（默认走 Kimi）
      *
      * - 前端传入完整对话 messages（role: system/user/assistant, content: 原始文本，通常为中文）
      * - 服务端在最前追加一个 system 提示，告诉千问「你是了解蒙古族生活方式及习惯的 AI 助手」
@@ -52,12 +67,12 @@ public class AiController {
      * - 蒙古语翻译由前端按需调用 /tool/translate 完成（每条消息点击“翻译”）
      */
     @PostMapping("/mongolian-chat")
-    public Map<String, Object> mongolianChat(@RequestBody MongolianChatDTO dto) {
+    public Map<String, Object> mongolianChat(@RequestBody MongolianChatDTO dto, HttpServletRequest request) {
         if (dto.getMessages() == null || dto.getMessages().isEmpty()) {
             throw new IllegalArgumentException("messages 不能为空");
         }
 
-        // 构造千问 messages 列表（只关心 role / content）
+        // 构造 Kimi messages 列表（只关心 role / content）
         List<Map<String, Object>> messages = new java.util.ArrayList<>();
         for (MongolianChatDTO.Message m : dto.getMessages()) {
             if (m == null) continue;
@@ -75,18 +90,20 @@ public class AiController {
             throw new IllegalArgumentException("有效 messages 不能为空");
         }
 
-        // 在最前面追加一个系统提示，固定告诉千问：你是一名了解蒙古族人生活方式及习惯的 AI 助手
+        // 在最前面追加一个系统提示，固定告诉 Kimi：你是一名了解蒙古族人生活方式及习惯的 AI 助手
         Map<String, Object> systemMsg = new java.util.LinkedHashMap<>();
         systemMsg.put("role", "system");
         systemMsg.put("content", "你是一名非常了解蒙古族人生活方式和生活习惯的 AI 助手，请用简洁、友好的语气回答用户问题。");
         messages.add(0, systemMsg);
 
-        // 调用千问，保持上下文
-        Map<String, Object> raw = qwenService.chatWithMessages(
+        // 调用 Kimi，保持上下文
+        Map<String, Object> raw = kimiService.chatWithMessages(
                 messages,
                 dto.getModel(),
                 dto.getTemperature(),
-                dto.getMaxTokens()
+                dto.getMaxTokens(),
+                dto.getEnableWebSearch(),
+                dto.getSearchMode()
         );
         String assistantContent = extractChatContent(raw);
 
@@ -98,6 +115,23 @@ public class AiController {
         result.put("message", "ok");
         result.put("data", data);
         result.put("raw", raw);
+
+        // 从对话中取出用户最新一条 user 消息作为“提问”，记录蒙古语 AI 对话问答
+        String userQuestion = null;
+        for (int i = messages.size() - 1; i >= 0; i--) {
+            Object roleObj = messages.get(i).get("role");
+            if ("user".equals(roleObj)) {
+                Object c = messages.get(i).get("content");
+                userQuestion = c == null ? null : String.valueOf(c);
+                break;
+            }
+        }
+        String openid = request != null ? (String) request.getAttribute("openid") : null;
+        log.info("AI 对话[蒙古语] openid={}, model={}, question={}, answer={}",
+                openid,
+                dto.getModel() != null ? dto.getModel() : "default",
+                truncate(userQuestion, 500),
+                truncate(assistantContent, 500));
         return result;
     }
 
@@ -162,6 +196,12 @@ public class AiController {
         } catch (Exception ignored) {
             return null;
         }
+    }
+
+    private static String truncate(String s, int max) {
+        if (s == null) return null;
+        if (s.length() <= max) return s;
+        return s.substring(0, max) + "...(truncated)";
     }
 }
 
