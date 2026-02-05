@@ -29,6 +29,7 @@ application-*.yml
 !application-dev.yml.example
 !application-prod.yml.example
 node_modules/
+unpackage/
 # 系统文件
 .DS_Store
 Thumbs.db
