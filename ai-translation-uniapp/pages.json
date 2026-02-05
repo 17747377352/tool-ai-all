@@ -1,113 +1,109 @@
 {
-    "easycom": {
-        "autoscan": true,
-        "custom": {
-            "^u-(.*)": "uview-ui/components/u-$1/u-$1.vue"
-        }
-    },
-    "pages": [
-        {
-            "path": "pages/index/index",
-            "style": {
-                "navigationBarTitleText": "AI翻译工具",
-                "navigationBarBackgroundColor": "#ffffff",
-                "navigationBarTextStyle": "black"
-            }
-        },
-        {
-            "path": "pages/translate/translate",
-            "style": {
-                "navigationBarTitleText": "即时翻译",
-                "navigationBarBackgroundColor": "#ffffff",
-                "navigationBarTextStyle": "black"
-            }
-        },
-        {
-            "path": "pages/old-photo/old-photo",
-            "style": {
-                "navigationBarTitleText": "老照片修复",
-                "navigationBarBackgroundColor": "#ffffff",
-                "navigationBarTextStyle": "black"
-            }
-        },
-        {
-            "path": "pages/image-to-image/image-to-image",
-            "style": {
-                "navigationBarTitleText": "图生图",
-                "navigationBarBackgroundColor": "#ffffff",
-                "navigationBarTextStyle": "black"
-            }
-        },
-        {
-            "path": "pages/image-generate/image-generate",
-            "style": {
-                "navigationBarTitleText": "生成图片",
-                "navigationBarBackgroundColor": "#ffffff",
-                "navigationBarTextStyle": "black"
-            }
-        },
-        {
-            "path": "pages/image-generate/template-list",
-            "style": {
-                "navigationBarTitleText": "选择模版",
-                "navigationBarBackgroundColor": "#ffffff",
-                "navigationBarTextStyle": "black"
-            }
-        },
-        {
-            "path": "pages/image-generate/task-list",
-            "style": {
-                "navigationBarTitleText": "我的任务",
-                "navigationBarBackgroundColor": "#ffffff",
-                "navigationBarTextStyle": "black"
-            }
-        },
-        {
-            "path": "pages/image-recognition/image-recognition",
-            "style": {
-                "navigationBarTitleText": "AI识图+翻译",
-                "navigationBarBackgroundColor": "#ffffff",
-                "navigationBarTextStyle": "black"
-            }
-        },
-        {
-            "path": "pages/mongolian-chat/mongolian-chat",
-            "style": {
-                "navigationBarTitleText": "蒙古语AI对话",
-                "navigationBarBackgroundColor": "#ffffff",
-                "navigationBarTextStyle": "black"
-            }
-        },
-        {
-            "path": "pages/result/result",
-            "style": {
-                "navigationBarTitleText": "生成结果",
-                "navigationBarBackgroundColor": "#ffffff",
-                "navigationBarTextStyle": "black"
-            }
-        },
-        {
-            "path": "pages/user/user",
-            "style": {
-                "navigationBarTitleText": "我的",
-                "navigationBarBackgroundColor": "#ffffff",
-                "navigationBarTextStyle": "black"
-            }
-        },
-        {
-            "path": "pages/feedback/feedback",
-            "style": {
-                "navigationBarTitleText": "意见反馈",
-                "navigationBarBackgroundColor": "#ffffff",
-                "navigationBarTextStyle": "black"
-            }
-        }
-    ],
-    "globalStyle": {
-        "navigationBarTextStyle": "black",
-        "navigationBarTitleText": "AI翻译工具",
-        "navigationBarBackgroundColor": "#ffffff",
-        "backgroundColor": "#f5f5f5"
-    }
+	"easycom": {
+		"autoscan": true,
+		"custom": {
+			"^u-(.*)": "uview-ui/components/u-$1/u-$1.vue"
+		}
+	},
+	"pages": [{
+			"path": "pages/index/index",
+			"style": {
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/translate/translate",
+			"style": {
+				"navigationBarTitleText": "即时翻译",
+				"navigationBarBackgroundColor": "#ffffff",
+				"navigationBarTextStyle": "black"
+			}
+		},
+		{
+			"path": "pages/old-photo/old-photo",
+			"style": {
+				"navigationBarTitleText": "老照片修复",
+				"navigationBarBackgroundColor": "#ffffff",
+				"navigationBarTextStyle": "black"
+			}
+		},
+		{
+			"path": "pages/image-to-image/image-to-image",
+			"style": {
+				"navigationBarTitleText": "图生图",
+				"navigationBarBackgroundColor": "#ffffff",
+				"navigationBarTextStyle": "black"
+			}
+		},
+		{
+			"path": "pages/image-generate/image-generate",
+			"style": {
+				"navigationBarTitleText": "生成图片",
+				"navigationBarBackgroundColor": "#ffffff",
+				"navigationBarTextStyle": "black"
+			}
+		},
+		{
+			"path": "pages/image-generate/template-list",
+			"style": {
+				"navigationBarTitleText": "选择模版",
+				"navigationBarBackgroundColor": "#ffffff",
+				"navigationBarTextStyle": "black"
+			}
+		},
+		{
+			"path": "pages/image-generate/task-list",
+			"style": {
+				"navigationBarTitleText": "我的任务",
+				"navigationBarBackgroundColor": "#ffffff",
+				"navigationBarTextStyle": "black"
+			}
+		},
+		{
+			"path": "pages/image-recognition/image-recognition",
+			"style": {
+				"navigationBarTitleText": "AI识图+翻译",
+				"navigationBarBackgroundColor": "#ffffff",
+				"navigationBarTextStyle": "black"
+			}
+		},
+		{
+			"path": "pages/mongolian-chat/mongolian-chat",
+			"style": {
+				"navigationBarTitleText": "蒙古语AI对话",
+				"navigationBarBackgroundColor": "#ffffff",
+				"navigationBarTextStyle": "black"
+			}
+		},
+		{
+			"path": "pages/result/result",
+			"style": {
+				"navigationBarTitleText": "生成结果",
+				"navigationBarBackgroundColor": "#ffffff",
+				"navigationBarTextStyle": "black"
+			}
+		},
+		{
+			"path": "pages/user/user",
+			"style": {
+				"navigationBarTitleText": "我的",
+				"navigationBarBackgroundColor": "#ffffff",
+				"navigationBarTextStyle": "black"
+			}
+		},
+		{
+			"path": "pages/feedback/feedback",
+			"style": {
+				"navigationBarTitleText": "意见反馈",
+				"navigationBarBackgroundColor": "#ffffff",
+				"navigationBarTextStyle": "black"
+			}
+		}
+	],
+	"globalStyle": {
+		"navigationBarTextStyle": "black",
+		"navigationBarTitleText": "AI翻译工具",
+		"navigationBarBackgroundColor": "#ffffff",
+		"backgroundColor": "#f5f5f5"
+	}
 }
-
