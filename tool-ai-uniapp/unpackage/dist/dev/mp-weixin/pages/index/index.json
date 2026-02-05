@@ -1,8 +1,0 @@
-{
-  "navigationBarTitleText": "AI工具箱",
-  "navigationBarBackgroundColor": "#ffffff",
-  "navigationBarTextStyle": "black",
-  "usingComponents": {
-    "ad-video-banner": "../../common/components/ad-video-banner"
-  }
-}
