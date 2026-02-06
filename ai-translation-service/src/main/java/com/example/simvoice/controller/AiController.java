@@ -1,8 +1,12 @@
 package com.example.simvoice.controller;
 
+import cn.hutool.core.convert.Convert;
+import cn.hutool.core.map.MapUtil;
+import cn.hutool.core.util.StrUtil;
 import com.example.simvoice.dto.MongolianChatDTO;
 import com.example.simvoice.service.DoubaoImageService;
 import com.example.simvoice.service.KimiService;
+import com.example.simvoice.utils.OpenAiCompatJsonUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -32,19 +36,19 @@ public class AiController {
      */
     @PostMapping("/kimi/chat")
     public Map<String, Object> kimiChat(@RequestBody Map<String, Object> body, HttpServletRequest request) {
-        String prompt = str(body.get("prompt"));
-        String system = str(body.get("system"));
-        String model = str(body.get("model"));
-        Double temperature = num(body.get("temperature"));
-        Integer maxTokens = intNum(body.get("maxTokens"));
+        String prompt = StrUtil.trimToNull(MapUtil.getStr(body, "prompt"));
+        String system = StrUtil.trimToNull(MapUtil.getStr(body, "system"));
+        String model = StrUtil.trimToNull(MapUtil.getStr(body, "model"));
+        Double temperature = Convert.toDouble(body.get("temperature"), null);
+        Integer maxTokens = Convert.toInt(body.get("maxTokens"), null);
         Boolean enableWebSearch = body.get("enableWebSearch") instanceof Boolean ? (Boolean) body.get("enableWebSearch") : null;
-        String searchMode = str(body.get("searchMode"));
+        String searchMode = StrUtil.trimToNull(MapUtil.getStr(body, "searchMode"));
 
         Map<String, Object> raw = kimiService.chat(prompt, system, model, temperature, maxTokens, enableWebSearch, searchMode);
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("code", 200);
         result.put("message", "ok");
-        String content = extractChatContent(raw);
+        String content = OpenAiCompatJsonUtils.firstChatContent(raw);
         result.put("content", content);
         result.put("raw", raw);
 
@@ -53,8 +57,8 @@ public class AiController {
         log.info("AI 对话[Kimi] openid={}, model={}, prompt={}, answer={}",
                 openid,
                 model != null ? model : "default",
-                truncate(prompt, 500),
-                truncate(content, 500));
+                truncateForLog(prompt, 500),
+                truncateForLog(content, 500));
         return result;
     }
 
@@ -105,7 +109,7 @@ public class AiController {
                 dto.getEnableWebSearch(),
                 dto.getSearchMode()
         );
-        String assistantContent = extractChatContent(raw);
+        String assistantContent = OpenAiCompatJsonUtils.firstChatContent(raw);
 
         Map<String, Object> data = new LinkedHashMap<>();
         data.put("assistantText", assistantContent);
@@ -130,8 +134,8 @@ public class AiController {
         log.info("AI 对话[蒙古语] openid={}, model={}, question={}, answer={}",
                 openid,
                 dto.getModel() != null ? dto.getModel() : "default",
-                truncate(userQuestion, 500),
-                truncate(assistantContent, 500));
+                truncateForLog(userQuestion, 500),
+                truncateForLog(assistantContent, 500));
         return result;
     }
 
@@ -142,10 +146,10 @@ public class AiController {
      */
     @PostMapping("/doubao/image")
     public Map<String, Object> doubaoImage(@RequestBody Map<String, Object> body) {
-        String prompt = str(body.get("prompt"));
-        Integer n = intNum(body.get("n"));
-        String size = str(body.get("size"));
-        String model = str(body.get("model"));
+        String prompt = StrUtil.trimToNull(MapUtil.getStr(body, "prompt"));
+        Integer n = MapUtil.getInt(body, "n", null);
+        String size = StrUtil.trimToNull(MapUtil.getStr(body, "size"));
+        String model = StrUtil.trimToNull(MapUtil.getStr(body, "model"));
 
         Map<String, Object> raw = doubaoImageService.generate(prompt, n, size, model);
         Map<String, Object> result = new LinkedHashMap<>();
@@ -156,52 +160,11 @@ public class AiController {
         return result;
     }
 
-    @SuppressWarnings("unchecked")
-    private static String extractChatContent(Map<String, Object> raw) {
-        Object choicesObj = raw.get("choices");
-        if (!(choicesObj instanceof List)) return null;
-        List<Object> choices = (List<Object>) choicesObj;
-        if (choices.isEmpty()) return null;
-        Object c0 = choices.get(0);
-        if (!(c0 instanceof Map)) return null;
-        Map<String, Object> choice0 = (Map<String, Object>) c0;
-        Object msgObj = choice0.get("message");
-        if (!(msgObj instanceof Map)) return null;
-        Map<String, Object> msg = (Map<String, Object>) msgObj;
-        Object content = msg.get("content");
-        return content == null ? null : String.valueOf(content);
-    }
-
-    private static String str(Object o) {
-        if (o == null) return null;
-        String s = String.valueOf(o);
-        return s.trim().isEmpty() ? null : s.trim();
-    }
-
-    private static Double num(Object o) {
-        if (o == null) return null;
-        if (o instanceof Number) return ((Number) o).doubleValue();
-        try {
-            return Double.parseDouble(String.valueOf(o));
-        } catch (Exception ignored) {
-            return null;
-        }
-    }
-
-    private static Integer intNum(Object o) {
-        if (o == null) return null;
-        if (o instanceof Number) return ((Number) o).intValue();
-        try {
-            return Integer.parseInt(String.valueOf(o));
-        } catch (Exception ignored) {
-            return null;
-        }
-    }
-
-    private static String truncate(String s, int max) {
+    private static String truncateForLog(String s, int max) {
         if (s == null) return null;
-        if (s.length() <= max) return s;
-        return s.substring(0, max) + "...(truncated)";
+        String t = s.trim();
+        if (t.length() <= max) return t;
+        return StrUtil.subPre(t, max) + "...(truncated)";
     }
 }
 

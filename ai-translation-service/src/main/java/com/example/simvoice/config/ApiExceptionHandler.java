@@ -1,4 +1,4 @@
-package com.example.simvoice.controller;
+package com.example.simvoice.config;
 
 import com.example.simvoice.result.Result;
 import com.example.simvoice.result.ResultCode;

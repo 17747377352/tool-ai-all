@@ -1,9 +1,8 @@
 package com.example.simvoice.service.impl;
 
 import com.example.simvoice.config.DoubaoProperties;
-import com.example.simvoice.exception.BusinessException;
-import com.example.simvoice.result.ResultCode;
 import com.example.simvoice.service.DoubaoVisionService;
+import com.example.simvoice.utils.OpenAiCompatJsonUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.ParameterizedTypeReference;
@@ -48,16 +47,15 @@ public class DoubaoVisionServiceImpl implements DoubaoVisionService {
     private final DoubaoProperties props;
 
     @Override
-    @SuppressWarnings("unchecked")
     public String understandImage(String imageUrl, String question) {
         if (!StringUtils.hasText(props.getApiKey())) {
-            throw new BusinessException(ResultCode.ERROR, "未配置豆包/火山 Ark API Key：请在 application.yml 配置 ai.doubao.api-key（或设置环境变量 ARK_API_KEY）");
+            throw new IllegalStateException("未配置豆包/火山 Ark API Key：请在 application.yml 配置 ai.doubao.api-key（或设置环境变量 ARK_API_KEY）");
         }
         if (!StringUtils.hasText(props.getBaseUrl())) {
-            throw new BusinessException(ResultCode.ERROR, "未配置豆包 Ark base-url：请在 application.yml 配置 ai.doubao.base-url");
+            throw new IllegalStateException("未配置豆包 Ark base-url：请在 application.yml 配置 ai.doubao.base-url");
         }
         if (!StringUtils.hasText(imageUrl)) {
-            throw new BusinessException(ResultCode.PARAM_ERROR, "图片地址不能为空");
+            throw new IllegalArgumentException("图片地址不能为空");
         }
 
         String model = StringUtils.hasText(props.getVisionModel())
@@ -103,34 +101,15 @@ public class DoubaoVisionServiceImpl implements DoubaoVisionService {
                     new ParameterizedTypeReference<Map<String, Object>>() {}
             );
             Map<String, Object> respBody = resp.getBody();
-            String content = extractChatContent(respBody);
+            String content = OpenAiCompatJsonUtils.firstChatContent(respBody);
             if (!StringUtils.hasText(content)) {
-                throw new BusinessException(ResultCode.ERROR, "豆包视觉模型未返回内容");
+                throw new IllegalStateException("豆包视觉模型未返回内容");
             }
             return content.trim();
-        } catch (BusinessException e) {
-            throw e;
         } catch (Exception e) {
             log.error("调用豆包视觉模型失败, imageUrl={}", imageUrl, e);
-            throw new BusinessException(ResultCode.ERROR, "豆包视觉图片理解失败: " + e.getMessage());
+            throw new IllegalStateException("豆包视觉图片理解失败: " + e.getMessage());
         }
-    }
-
-    @SuppressWarnings("unchecked")
-    private String extractChatContent(Map<String, Object> raw) {
-        if (raw == null) return null;
-        Object choicesObj = raw.get("choices");
-        if (!(choicesObj instanceof List)) return null;
-        List<Object> choices = (List<Object>) choicesObj;
-        if (choices.isEmpty()) return null;
-        Object c0 = choices.get(0);
-        if (!(c0 instanceof Map)) return null;
-        Map<String, Object> choice0 = (Map<String, Object>) c0;
-        Object msgObj = choice0.get("message");
-        if (!(msgObj instanceof Map)) return null;
-        Map<String, Object> msg = (Map<String, Object>) msgObj;
-        Object content = msg.get("content");
-        return content == null ? null : String.valueOf(content);
     }
 
     private static String joinUrl(String base, String path) {
