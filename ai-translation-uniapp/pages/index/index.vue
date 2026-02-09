@@ -1,6 +1,8 @@
 <template>
   <view class="container">
-    <image class="top-bg-img" src="../../static/top-bg.webp" mode="aspectFill"></image>
+    <image class="top-bg-img"
+      src="https://p26-dreamina-sign.byteimg.com/tos-cn-i-tb4s082cfz/444fe422131e47afb826f0122239fb52~tplv-tb4s082cfz-aigc_resize:1080:1080.webp?lk3s=43402efa&x-expires=1772928000&x-signature=TTZNURzA%2FtcGNRYkHfPWg8KqAKs%3D&format=.webp"
+      mode="aspectFill"></image>
     <view class="linear"></view>
     <view class="tool-grid">
       <view class="tool-item large" style="" @click="navigateToTool('mongolian-chat')">
