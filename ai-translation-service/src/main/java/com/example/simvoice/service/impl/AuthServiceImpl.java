@@ -3,6 +3,7 @@ package com.example.simvoice.service.impl;
 import com.example.simvoice.entity.User;
 import com.example.simvoice.service.AuthService;
 import com.example.simvoice.service.UserService;
+import com.example.simvoice.service.UserQuotaService;
 import com.example.simvoice.service.WechatService;
 import com.example.simvoice.utils.JwtUtil;
 import com.example.simvoice.vo.WxLoginVO;
@@ -24,6 +25,7 @@ public class AuthServiceImpl implements AuthService {
 
     private final WechatService wechatService;
     private final UserService userService;
+    private final UserQuotaService userQuotaService;
 
     /**
      * 微信小程序登录
@@ -39,8 +41,11 @@ public class AuthServiceImpl implements AuthService {
 
         // 2. 查询或创建用户
         User user = userService.getByOpenid(openid);
-        if (user == null) {
+        boolean isNewUser = (user == null);
+        if (isNewUser) {
             user = userService.createOrUpdate(openid, null, null);
+            // 新用户初始化额度
+            userQuotaService.getOrCreateQuota(openid);
         }
 
         // 3. 生成JWT token

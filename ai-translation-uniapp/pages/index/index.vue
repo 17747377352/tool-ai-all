@@ -6,26 +6,19 @@
         </view>
 
         <view class="tool-grid">
-            <view class="tool-item" @click="navigateToTool('translate')">
-                <view class="tool-icon-placeholder">🌐</view>
-                <text class="tool-name">即时翻译</text>
+            <view 
+                v-for="(func, index) in functionList" 
+                :key="index"
+                class="tool-item" 
+                @click="navigateToFunction(func)"
+            >
+                <view class="tool-icon-placeholder">{{ getFunctionIcon(func.type) }}</view>
+                <text class="tool-name">{{ func.name }}</text>
             </view>
-            <view class="tool-item" @click="navigateToTool('old-photo')">
-                <view class="tool-icon-placeholder">📸</view>
-                <text class="tool-name">老照片修复</text>
-            </view>
-            <view class="tool-item" @click="navigateToTool('image-generate')">
-                <view class="tool-icon-placeholder">✨</view>
-                <text class="tool-name">生成图片</text>
-            </view>
-            <view class="tool-item" @click="navigateToTool('image-recognition')">
-                <view class="tool-icon-placeholder">👁️</view>
-                <text class="tool-name">AI识图+翻译</text>
-            </view>
-            <view class="tool-item" @click="navigateToTool('mongolian-chat')">
-                <view class="tool-icon-placeholder">💬</view>
-                <text class="tool-name">蒙古语AI对话</text>
-            </view>
+        </view>
+        
+        <view v-if="loading" class="loading">
+            <text>加载中...</text>
         </view>
 
         <!-- 反馈按钮（右下角浮动） -->
@@ -37,14 +30,68 @@
 </template>
 
 <script>
+import api from '@/common/utils/api.js';
 import { checkUserAuth, getUserInfoAndDecrypt } from '@/common/utils/auth.js';
 
 export default {
+    data() {
+        return {
+            functionList: [],
+            loading: false
+        };
+    },
     onLoad() {
         // 登录已在App.vue中处理，这里不需要重复登录
+        this.loadFunctionList();
+    },
+    onShow() {
+        // 每次显示页面时刷新功能列表（支持动态更新）
+        this.loadFunctionList();
     },
     methods: {
-        async navigateToTool(toolName) {
+        async loadFunctionList() {
+            this.loading = true;
+            try {
+                const res = await api.getFunctionList();
+                if (res.code === 200 && res.data) {
+                    this.functionList = res.data;
+                } else {
+                    console.error('获取功能列表失败', res.message);
+                    // 如果接口失败，使用默认列表
+                    this.functionList = this.getDefaultFunctionList();
+                }
+            } catch (e) {
+                console.error('获取功能列表异常', e);
+                // 如果接口异常，使用默认列表
+                this.functionList = this.getDefaultFunctionList();
+            } finally {
+                this.loading = false;
+            }
+        },
+        getDefaultFunctionList() {
+            // 默认功能列表（接口失败时的降级方案）
+            return [
+                { type: 1, name: '去水印', route: '/pages/watermark-removal/watermark-removal' },
+                { type: 2, name: '生成图片', route: '/pages/image-generate/image-generate' },
+                { type: 3, name: '老照片修复', route: '/pages/old-photo/old-photo' },
+                { type: 4, name: 'AI识图+翻译', route: '/pages/image-recognition/image-recognition' },
+                { type: 5, name: '即时翻译', route: '/pages/translate/translate' },
+                { type: 6, name: '蒙古语AI对话', route: '/pages/mongolian-chat/mongolian-chat' }
+            ];
+        },
+        getFunctionIcon(type) {
+            // 根据功能类型返回对应的图标
+            const iconMap = {
+                1: '💧',  // 去水印
+                2: '✨',  // 生成图片
+                3: '📸',  // 老照片修复
+                4: '👁️',  // AI识图+翻译
+                5: '🌐',  // 即时翻译
+                6: '💬'   // 蒙古语AI对话
+            };
+            return iconMap[type] || '📱';
+        },
+        async navigateToFunction(func) {
             try {
                 // 检查用户授权
                 await checkUserAuth();
@@ -58,7 +105,7 @@ export default {
                         if (modalRes.confirm) {
                             try {
                                 await getUserInfoAndDecrypt();
-                                this.goToTool(toolName);
+                                this.goToFunction(func);
                             } catch (err) {
                                 uni.showToast({
                                     title: '授权失败',
@@ -70,18 +117,18 @@ export default {
                 });
                 return;
             }
-            this.goToTool(toolName);
+            this.goToFunction(func);
         },
-        goToTool(toolName) {
-            const pages = {
-                'translate': '/pages/translate/translate',
-                'old-photo': '/pages/old-photo/old-photo',
-                'image-generate': '/pages/image-generate/image-generate',
-                'image-recognition': '/pages/image-recognition/image-recognition',
-                'mongolian-chat': '/pages/mongolian-chat/mongolian-chat'
-            };
+        goToFunction(func) {
+            if (!func || !func.route) {
+                uni.showToast({
+                    title: '功能路由不存在',
+                    icon: 'none'
+                });
+                return;
+            }
             uni.navigateTo({
-                url: pages[toolName]
+                url: func.route
             });
         },
         navigateToFeedback() {
@@ -191,6 +238,13 @@ export default {
     font-size: 22rpx;
     color: #667eea;
     font-weight: 500;
+}
+
+.loading {
+    text-align: center;
+    padding: 40rpx 0;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 28rpx;
 }
 </style>
 

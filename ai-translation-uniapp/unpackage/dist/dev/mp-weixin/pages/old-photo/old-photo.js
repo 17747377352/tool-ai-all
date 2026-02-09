@@ -1,6 +1,7 @@
 "use strict";
 const common_vendor = require("../../common/vendor.js");
 const common_utils_api = require("../../common/utils/api.js");
+const common_config_functionType = require("../../common/config/function-type.js");
 const common_utils_ossUpload = require("../../common/utils/oss-upload.js");
 const AdVideoBanner = () => "../../common/components/ad-video-banner.js";
 const _sfc_main = {
@@ -57,7 +58,7 @@ const _sfc_main = {
           this.uploadImage();
         },
         fail: (err) => {
-          common_vendor.index.__f__("error", "at pages/old-photo/old-photo.vue:232", "选择图片失败", err);
+          common_vendor.index.__f__("error", "at pages/old-photo/old-photo.vue:233", "选择图片失败", err);
           common_vendor.index.showToast({
             title: "选择图片失败",
             icon: "none"
@@ -92,7 +93,7 @@ const _sfc_main = {
           });
         },
         fail: (err) => {
-          common_vendor.index.__f__("error", "at pages/old-photo/old-photo.vue:270", "选择图片失败", err);
+          common_vendor.index.__f__("error", "at pages/old-photo/old-photo.vue:271", "选择图片失败", err);
           common_vendor.index.showToast({
             title: "选择图片失败",
             icon: "none"
@@ -109,7 +110,7 @@ const _sfc_main = {
         this.imageList[index].ossUrl = imageUrl;
         this.imageList[index].uploading = false;
       } catch (e) {
-        common_vendor.index.__f__("error", "at pages/old-photo/old-photo.vue:289", "上传图片失败", e);
+        common_vendor.index.__f__("error", "at pages/old-photo/old-photo.vue:290", "上传图片失败", e);
         this.imageList[index].uploading = false;
         common_vendor.index.showToast({
           title: "图片上传失败",
@@ -132,7 +133,7 @@ const _sfc_main = {
         this.imageUrl = imageUrl;
         common_vendor.index.hideLoading();
       } catch (e) {
-        common_vendor.index.__f__("error", "at pages/old-photo/old-photo.vue:313", "上传图片失败", e);
+        common_vendor.index.__f__("error", "at pages/old-photo/old-photo.vue:314", "上传图片失败", e);
         common_vendor.index.hideLoading();
         common_vendor.index.showToast({
           title: e.message || "上传失败",
@@ -155,7 +156,7 @@ const _sfc_main = {
         });
         if (res.code === 200) {
           common_vendor.index.navigateTo({
-            url: `/pages/result/result?type=6&resultUrl=${encodeURIComponent(res.data.resultUrl)}`
+            url: `/pages/result/result?type=${common_config_functionType.FUNCTION_TYPE.OLD_PHOTO_RESTORE}&resultUrl=${encodeURIComponent(res.data.resultUrl)}`
           });
         } else {
           common_vendor.index.showToast({
@@ -164,7 +165,7 @@ const _sfc_main = {
           });
         }
       } catch (e) {
-        common_vendor.index.__f__("error", "at pages/old-photo/old-photo.vue:345", "修复失败", e);
+        common_vendor.index.__f__("error", "at pages/old-photo/old-photo.vue:346", "修复失败", e);
         common_vendor.index.showToast({
           title: e.message || "修复失败，请重试",
           icon: "none"
@@ -195,7 +196,7 @@ const _sfc_main = {
         });
         if (res.code === 200) {
           common_vendor.index.navigateTo({
-            url: `/pages/result/result?type=6&resultUrl=${encodeURIComponent(res.data.resultUrl)}`
+            url: `/pages/result/result?type=${common_config_functionType.FUNCTION_TYPE.OLD_PHOTO_RESTORE}&resultUrl=${encodeURIComponent(res.data.resultUrl)}`
           });
         } else {
           common_vendor.index.showToast({
@@ -204,7 +205,7 @@ const _sfc_main = {
           });
         }
       } catch (e) {
-        common_vendor.index.__f__("error", "at pages/old-photo/old-photo.vue:413", "批量修复失败", e);
+        common_vendor.index.__f__("error", "at pages/old-photo/old-photo.vue:414", "批量修复失败", e);
         common_vendor.index.showToast({
           title: e.message || "批量修复失败，请重试",
           icon: "none"

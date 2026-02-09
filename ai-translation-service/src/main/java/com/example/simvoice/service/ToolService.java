@@ -20,7 +20,7 @@ public interface ToolService {
     String generateAiAvatar(String openid, AiAvatarDTO dto);
 
     /**
-     * 老照片修复（GFPGAN）- 单张
+     * 老照片修复（火山引擎）- 单张
      *
      * @param openid 用户openid
      * @param dto 修复请求参数
@@ -29,7 +29,7 @@ public interface ToolService {
     String restoreOldPhoto(String openid, OldPhotoRestoreDTO dto);
     
     /**
-     * 老照片批量修复（GFPGAN）
+     * 老照片批量修复（火山引擎）
      *
      * @param openid 用户openid
      * @param dto 批量修复请求参数，包含图片URL数组
@@ -47,18 +47,6 @@ public interface ToolService {
      */
     String translate(String openid, TranslateDTO dto);
     
-    /**
-     * 使用模版生成图片（异步）
-     * 支持两种模式：
-     * 1. 模版同款：使用模版的提示词和风格生成图片
-     * 2. 模版参考图：使用模版图片作为参考图，结合提示词进行图生图
-     *
-     * @param openid 用户openid
-     * @param dto 模版生成请求参数
-     * @return 任务ID
-     */
-    Long generateImageFromTemplate(String openid, TemplateGenerateDTO dto);
-
     /**
      * 创建图片生成任务（统一入口）
      * 支持三种模式：

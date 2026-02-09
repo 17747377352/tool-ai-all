@@ -51,13 +51,15 @@ export default {
             }
         },
         selectTemplate(template) {
-            // 返回上一页并传递选中的模版ID
-            const pages = getCurrentPages();
-            const prevPage = pages[pages.length - 2];
-            if (prevPage) {
-                prevPage.selectedTemplate = template;
-                prevPage.generateMode = 3; // 默认模版同款
+            // 返回上一页并传递选中的模版
+            // 使用全局数据存储选中的模版
+            const app = getApp();
+            if (app) {
+                app.globalData = app.globalData || {};
+                app.globalData.selectedTemplate = template;
             }
+            // 也可以使用本地存储作为备选方案
+            uni.setStorageSync('selectedTemplate', template);
             uni.navigateBack();
         }
     }

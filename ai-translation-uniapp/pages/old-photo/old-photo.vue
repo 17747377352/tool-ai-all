@@ -132,6 +132,7 @@
 <script>
 import api from '@/common/utils/api.js';
 import apiConfig from '@/common/config/api-config.js';
+import { FUNCTION_TYPE } from '@/common/config/function-type.js';
 import { showRewardedVideo } from '@/common/utils/ad.js';
 import AdVideoBanner from '@/common/components/ad-video-banner.vue';
 import { uploadToOss } from '@/common/utils/oss-upload.js';
@@ -333,7 +334,7 @@ export default {
                 });
                 if (res.code === 200) {
                     uni.navigateTo({
-                        url: `/pages/result/result?type=6&resultUrl=${encodeURIComponent(res.data.resultUrl)}`
+                        url: `/pages/result/result?type=${FUNCTION_TYPE.OLD_PHOTO_RESTORE}&resultUrl=${encodeURIComponent(res.data.resultUrl)}`
                     });
                 } else {
                     uni.showToast({
@@ -401,7 +402,7 @@ export default {
                     // await this.checkBatchRestoreStatus();
                     
                     uni.navigateTo({
-                        url: `/pages/result/result?type=6&resultUrl=${encodeURIComponent(res.data.resultUrl)}`
+                        url: `/pages/result/result?type=${FUNCTION_TYPE.OLD_PHOTO_RESTORE}&resultUrl=${encodeURIComponent(res.data.resultUrl)}`
                     });
                 } else {
                     uni.showToast({

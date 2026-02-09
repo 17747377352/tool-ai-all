@@ -71,6 +71,14 @@
             }
         },
         {
+            "path": "pages/watermark-removal/watermark-removal",
+            "style": {
+                "navigationBarTitleText": "去水印",
+                "navigationBarBackgroundColor": "#ffffff",
+                "navigationBarTextStyle": "black"
+            }
+        },
+        {
             "path": "pages/mongolian-chat/mongolian-chat",
             "style": {
                 "navigationBarTitleText": "蒙古语AI对话",

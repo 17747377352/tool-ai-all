@@ -1,10 +1,10 @@
 package com.example.simvoice.config;
 
+import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.stereotype.Component;
 
-@Component
 @ConfigurationProperties(prefix = "ai.kimi")
+@Data
 public class KimiProperties {
     /**
      * Moonshot API Key（建议用环境变量 MOONSHOT_API_KEY 注入）
@@ -22,28 +22,5 @@ public class KimiProperties {
      */
     private String model = "kimi-latest";
 
-    public String getApiKey() {
-        return apiKey;
-    }
-
-    public void setApiKey(String apiKey) {
-        this.apiKey = apiKey;
-    }
-
-    public String getBaseUrl() {
-        return baseUrl;
-    }
-
-    public void setBaseUrl(String baseUrl) {
-        this.baseUrl = baseUrl;
-    }
-
-    public String getModel() {
-        return model;
-    }
-
-    public void setModel(String model) {
-        this.model = model;
-    }
 }
 

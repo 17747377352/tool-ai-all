@@ -77,7 +77,7 @@ public class KimiService {
 
         //默认开启联网搜索
         boolean useWebSearch = enableWebSearch == null ? true : Boolean.TRUE.equals(enableWebSearch);
-        useWebSearch=false;
+        useWebSearch=true;
         // Moonshot 文档要求：每次请求都完整带上 tools 声明（builtin_function + function.name = "$web_search"）
         List<Map<String, Object>> tools = null;
         if (useWebSearch) {

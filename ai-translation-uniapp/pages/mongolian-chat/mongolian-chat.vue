@@ -49,6 +49,9 @@
       <button class="send-btn" :disabled="sending || !inputText.trim()" @tap="handleSend">
         {{ sending ? '发送中...' : '发送' }}
       </button>
+      <button class="clear-btn" @tap="clearMessages" v-if="messages.length > 1">
+        清空
+      </button>
     </view>
   </view>
 </template>
@@ -66,20 +69,72 @@ export default {
     };
   },
   onLoad() {
-    // 默认欢迎语（中文），进入页面时展示
-    const welcome = '嗨，我是你的ai蒙文小助手，需要我帮您做些什么？';
-    const welcomeMsg = {
-      role: 'assistant',
-      original: welcome,
-      mo: '',
-      loadingMo: false
-    };
-    this.messages.push(welcomeMsg);
+    // 从本地存储恢复会话历史
+    this.loadMessagesFromStorage();
+    
+    // 如果没有历史记录，显示默认欢迎语
+    if (this.messages.length === 0) {
+      const welcome = '嗨，我是你的ai蒙文小助手，需要我帮您做些什么？';
+      const welcomeMsg = {
+        role: 'assistant',
+        original: welcome,
+        mo: '',
+        loadingMo: false
+      };
+      this.messages.push(welcomeMsg);
+      this.saveMessagesToStorage();
+    }
+    
     this.$nextTick(() => {
       this.scrollToBottom();
     });
   },
   methods: {
+    // 从本地存储加载会话历史
+    loadMessagesFromStorage() {
+      try {
+        const stored = uni.getStorageSync('mongolian_chat_messages');
+        if (stored && Array.isArray(stored) && stored.length > 0) {
+          this.messages = stored;
+          console.log('已恢复会话历史，共', stored.length, '条消息');
+        }
+      } catch (e) {
+        console.error('加载会话历史失败', e);
+      }
+    },
+    // 保存会话历史到本地存储
+    saveMessagesToStorage() {
+      try {
+        uni.setStorageSync('mongolian_chat_messages', this.messages);
+      } catch (e) {
+        console.error('保存会话历史失败', e);
+      }
+    },
+    // 清空会话历史
+    clearMessages() {
+      uni.showModal({
+        title: '提示',
+        content: '确定要清空所有对话记录吗？',
+        success: (res) => {
+          if (res.confirm) {
+            this.messages = [];
+            // 重新显示欢迎语
+            const welcome = '嗨，我是你的ai蒙文小助手，需要我帮您做些什么？';
+            const welcomeMsg = {
+              role: 'assistant',
+              original: welcome,
+              mo: '',
+              loadingMo: false
+            };
+            this.messages.push(welcomeMsg);
+            this.saveMessagesToStorage();
+            this.$nextTick(() => {
+              this.scrollToBottom();
+            });
+          }
+        }
+      });
+    },
     scrollToBottom() {
       if (this.messages.length === 0) return;
       this.scrollIntoView = 'msg-' + (this.messages.length - 1);
@@ -96,6 +151,7 @@ export default {
         .then((res) => {
           if (res && res.data && res.data.result) {
             item.mo = res.data.result;
+            this.saveMessagesToStorage(); // 保存翻译结果
           } else {
             uni.showToast({
               title: '翻译失败',
@@ -126,6 +182,7 @@ export default {
         loadingMo: false
       };
       this.messages.push(userMsg);
+      this.saveMessagesToStorage(); // 保存会话历史
       this.inputText = '';
       this.$nextTick(() => {
         this.scrollToBottom();
@@ -157,6 +214,7 @@ export default {
             loadingMo: false
           };
           this.messages.push(assistantMsg);
+          this.saveMessagesToStorage(); // 保存会话历史
 
           this.$nextTick(() => {
             this.scrollToBottom();
@@ -274,6 +332,18 @@ export default {
 
 .send-btn[disabled] {
   opacity: 0.6;
+}
+
+.clear-btn {
+  margin-left: 12rpx;
+  padding: 0 24rpx;
+  height: 72rpx;
+  line-height: 72rpx;
+  border-radius: 999rpx;
+  background-color: #f5f5f5;
+  color: #666;
+  font-size: 26rpx;
+  border: 1rpx solid #e0e0e0;
 }
 </style>
 

@@ -51,6 +51,7 @@
 <script>
 import api from '@/common/utils/api.js';
 import apiConfig from '@/common/config/api-config.js';
+import { FUNCTION_TYPE } from '@/common/config/function-type.js';
 import { uploadToOss } from '@/common/utils/oss-upload.js';
 
 export default {
@@ -144,7 +145,7 @@ export default {
                 
                 if (res.code === 200) {
                     uni.navigateTo({
-                        url: `/pages/result/result?type=2&resultUrl=${encodeURIComponent(res.data.resultUrl)}`
+                        url: `/pages/result/result?type=${FUNCTION_TYPE.IMAGE_GENERATE}&resultUrl=${encodeURIComponent(res.data.resultUrl)}`
                     });
                 } else {
                     uni.showToast({

@@ -8,11 +8,19 @@ import com.volcengine.ark.runtime.model.images.generation.GenerateImagesRequest;
 import com.volcengine.ark.runtime.model.images.generation.ImagesResponse;
 import com.volcengine.ark.runtime.model.images.generation.ResponseFormat;
 import com.volcengine.ark.runtime.service.ArkService;
+import com.example.simvoice.utils.OpenAiCompatJsonUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.ConnectionPool;
 import okhttp3.Dispatcher;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
+import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -20,8 +28,8 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * 火山引擎图片生成服务实现类
- * 使用火山引擎文生图API生成图片
- * 
+ * 使用火山引擎文生图API生成图片/进行图片增强
+ *
  * @author ai-translation-service
  * @since 1.0
  */
@@ -31,6 +39,7 @@ import java.util.concurrent.TimeUnit;
 public class HuoshanImageServiceImpl implements HuoshanImageService {
 
     private final HuoshanProperties huoshanProperties;
+    private final RestTemplate restTemplate;
 
     private ArkService arkService;
 
@@ -74,7 +83,7 @@ public class HuoshanImageServiceImpl implements HuoshanImageService {
             String enhancedPrompt = enhancePromptWithStyle(prompt, style);
 
             GenerateImagesRequest generateRequest = GenerateImagesRequest.builder()
-                    .model("doubao-seedream-4-0-250828")
+                    .model(huoshanProperties.getImageModel())
                     .prompt(enhancedPrompt)
                     .size("2K")
                     .sequentialImageGeneration("disabled")
@@ -83,15 +92,13 @@ public class HuoshanImageServiceImpl implements HuoshanImageService {
                     .watermark(true)
                     .build();
             ImagesResponse imagesResponse = arkService.generateImages(generateRequest);
-
             if (imagesResponse == null || imagesResponse.getData() == null || imagesResponse.getData().isEmpty()) {
                 throw new BusinessException(ResultCode.ERROR, "火山引擎图片生成失败：响应为空");
             }
-
             String imageUrl = imagesResponse.getData().get(0).getUrl();
             log.info("火山引擎字生图成功: prompt={}, style={}, url={}", prompt, style, imageUrl);
 
-            // ⭐ 返回IMAGE_LIST格式，与其他功能保持一致
+            // 返回IMAGE_LIST格式，与其他功能保持一致
             String imageListResult = String.format("IMAGE_LIST:[\"%s\"]", imageUrl);
             log.info("返回IMAGE_LIST格式: prompt={}, result={}", prompt, imageListResult);
 
@@ -121,7 +128,7 @@ public class HuoshanImageServiceImpl implements HuoshanImageService {
             String enhancedPrompt = enhancePromptWithStyle(prompt, style);
 
             GenerateImagesRequest generateRequest = GenerateImagesRequest.builder()
-                    .model("doubao-seedream-4-0-250828")
+                    .model(huoshanProperties.getImageModel())
                     .prompt(enhancedPrompt)
                     .image(imageUrl) // 图生图：传入原始图片URL
                     .size("2K")
@@ -139,45 +146,139 @@ public class HuoshanImageServiceImpl implements HuoshanImageService {
             String resultUrl = imagesResponse.getData().get(0).getUrl();
             log.info("火山引擎图生图成功: imageUrl={}, prompt={}, style={}, resultUrl={}", imageUrl, prompt, style, resultUrl);
 
-            // ⭐ 返回IMAGE_LIST格式，与其他功能保持一致
+            //  返回IMAGE_LIST格式，与其他功能保持一致
             String imageListResult = String.format("IMAGE_LIST:[\"%s\"]", resultUrl);
             log.info("返回IMAGE_LIST格式: imageUrl={}, result={}", imageUrl, imageListResult);
-
             return imageListResult;
 
         } catch (Exception e) {
             log.error("火山引擎图生图失败: imageUrl={}, prompt={}, style={}", imageUrl, prompt, style, e);
+            e.printStackTrace();
+            throw new BusinessException(ResultCode.ERROR, "火山引擎图片生成失败: "+ e.getMessage());
+        }
+    }
+
+    /**
+     * 老照片修复/增强：
+     * 使用火山引擎对老照片进行清晰度增强、去噪和人脸细节智能修复。
+     *
+     * 注意：这里返回的是裸的图片URL，不再包装为 IMAGE_LIST，
+     * 由调用方按需要决定是否包装。
+     */
+    @Override
+    public String enhancePhoto(String imageUrl, String prompt) {
+        try {
+            // 如果调用方没有传入自定义提示词，使用默认的中文提示
+            String finalPrompt = (prompt == null || prompt.trim().isEmpty())
+                    ? "请将照片修复清晰，提高分辨率，消除噪点，智能修复人物面部细节。"
+                    : prompt.trim();
+
+            GenerateImagesRequest generateRequest = GenerateImagesRequest.builder()
+                    .model(huoshanProperties.getImageModel())
+                    .prompt(finalPrompt)
+                    .image(imageUrl)
+                    .size("2K")
+                    .sequentialImageGeneration("disabled")
+                    .responseFormat(ResponseFormat.Url)
+                    .stream(false)
+                    .watermark(false) // 老照片修复通常不希望带水印
+                    .build();
+
+            ImagesResponse imagesResponse = arkService.generateImages(generateRequest);
+
+            if (imagesResponse == null || imagesResponse.getData() == null || imagesResponse.getData().isEmpty()) {
+                throw new BusinessException(ResultCode.ERROR, "火山引擎老照片修复失败：响应为空");
+            }
+
+            String resultUrl = imagesResponse.getData().get(0).getUrl();
+            log.info("火山引擎老照片修复成功: imageUrl={}, prompt={}, resultUrl={}", imageUrl, finalPrompt, resultUrl);
+
+            return resultUrl;
+        } catch (Exception e) {
+            log.error("火山引擎老照片修复失败: imageUrl={}, prompt={}", imageUrl, prompt, e);
             if (e instanceof BusinessException) {
                 throw e;
             }
-            
-            // 检查是否是账户余额不足的错误
             String errorMessage = e.getMessage();
-            if (errorMessage != null) {
-                if (errorMessage.contains("AccountOverdueError") || 
-                    errorMessage.contains("overdue balance") ||
-                    errorMessage.contains("余额不足")) {
-                    throw new BusinessException(ResultCode.ERROR, "火山引擎账户余额不足，请联系管理员充值");
-                }
-                if (errorMessage.contains("403") || errorMessage.contains("Forbidden")) {
-                    throw new BusinessException(ResultCode.ERROR, "火山引擎服务访问被拒绝，请检查账户状态");
-                }
-            }
-            
-            // 检查异常类型
-            Throwable cause = e.getCause();
-            while (cause != null) {
-                String causeMessage = cause.getMessage();
-                if (causeMessage != null && 
-                    (causeMessage.contains("AccountOverdueError") || 
-                     causeMessage.contains("overdue balance"))) {
-                    throw new BusinessException(ResultCode.ERROR, "火山引擎账户余额不足，请联系管理员充值");
-                }
-                cause = cause.getCause();
-            }
-            
-            throw new BusinessException(ResultCode.ERROR, "火山引擎图片生成失败: " + (errorMessage != null ? errorMessage : "未知错误"));
+            throw new BusinessException(ResultCode.ERROR, "火山引擎老照片修复失败: " + (errorMessage != null ? errorMessage : "未知错误"));
         }
+    }
+
+    /**
+     * 图片理解 / 识图：
+     * 使用火山 Ark 豆包视觉模型进行图片理解（/chat/completions）
+     */
+    @Override
+    public String understandImage(String imageUrl, String question) {
+        if (!StringUtils.hasText(huoshanProperties.getApiKey())) {
+            throw new IllegalStateException("未配置火山 Ark API Key：请在 application.yml 配置 huoshan.api-key（或设置环境变量 ARK_API_KEY）");
+        }
+        if (!StringUtils.hasText(huoshanProperties.getBaseUrl())) {
+            throw new IllegalStateException("未配置火山 Ark base-url：请在 application.yml 配置 huoshan.base-url");
+        }
+        if (!StringUtils.hasText(imageUrl)) {
+            throw new IllegalArgumentException("图片地址不能为空");
+        }
+
+        String model = StringUtils.hasText(huoshanProperties.getVisionModel())
+                ? huoshanProperties.getVisionModel()
+                : "doubao-1-5-vision-pro-32k-250115";
+
+        // content = [ {type:image_url,...}, {type:text,...} ]
+        java.util.List<java.util.Map<String, Object>> contentList = new java.util.ArrayList<>();
+        java.util.Map<String, Object> imagePart = new java.util.LinkedHashMap<>();
+        imagePart.put("type", "image_url");
+        java.util.Map<String, Object> imageUrlObj = new java.util.LinkedHashMap<>();
+        imageUrlObj.put("url", imageUrl);
+        imagePart.put("image_url", imageUrlObj);
+        contentList.add(imagePart);
+
+        java.util.Map<String, Object> textPart = new java.util.LinkedHashMap<>();
+        textPart.put("type", "text");
+        textPart.put("text", StringUtils.hasText(question) ? question : "图片主要讲了什么？请用简洁的中文总结。");
+        contentList.add(textPart);
+
+        java.util.List<java.util.Map<String, Object>> messages = new java.util.ArrayList<>();
+        java.util.Map<String, Object> userMsg = new java.util.LinkedHashMap<>();
+        userMsg.put("role", "user");
+        userMsg.put("content", contentList);
+        messages.add(userMsg);
+
+        java.util.Map<String, Object> body = new java.util.LinkedHashMap<>();
+        body.put("model", model);
+        body.put("messages", messages);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setBearerAuth(huoshanProperties.getApiKey().trim());
+
+        HttpEntity<java.util.Map<String, Object>> entity = new HttpEntity<>(body, headers);
+
+        String url = joinUrl(huoshanProperties.getBaseUrl(), "/chat/completions");
+        try {
+            ResponseEntity<java.util.Map<String, Object>> resp = restTemplate.exchange(
+                    url,
+                    HttpMethod.POST,
+                    entity,
+                    new org.springframework.core.ParameterizedTypeReference<java.util.Map<String, Object>>() {}
+            );
+            java.util.Map<String, Object> respBody = resp.getBody();
+            String content = OpenAiCompatJsonUtils.firstChatContent(respBody);
+            if (!StringUtils.hasText(content)) {
+                throw new IllegalStateException("火山视觉模型未返回内容");
+            }
+            return content.trim();
+        } catch (Exception e) {
+            log.error("调用火山视觉模型失败, imageUrl={}", imageUrl, e);
+            throw new IllegalStateException("火山视觉图片理解失败: " + e.getMessage());
+        }
+    }
+
+    private static String joinUrl(String base, String path) {
+        if (!StringUtils.hasText(base)) return path;
+        String b = base.endsWith("/") ? base.substring(0, base.length() - 1) : base;
+        String p = path.startsWith("/") ? path : ("/" + path);
+        return b + p;
     }
 
     /**

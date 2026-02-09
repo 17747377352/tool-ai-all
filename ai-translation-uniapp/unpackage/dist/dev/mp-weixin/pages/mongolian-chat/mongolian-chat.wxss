@@ -81,3 +81,14 @@
 .send-btn[disabled].data-v-84491c9e {
   opacity: 0.6;
 }
+.clear-btn.data-v-84491c9e {
+  margin-left: 12rpx;
+  padding: 0 24rpx;
+  height: 72rpx;
+  line-height: 72rpx;
+  border-radius: 999rpx;
+  background-color: #f5f5f5;
+  color: #666;
+  font-size: 26rpx;
+  border: 1rpx solid #e0e0e0;
+}

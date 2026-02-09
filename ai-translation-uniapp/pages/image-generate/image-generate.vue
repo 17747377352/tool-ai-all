@@ -210,6 +210,10 @@ export default {
             this.loadTemplate(options.templateId);
         }
     },
+    onShow() {
+        // 检查是否有选中的模版（从模版列表页面返回）
+        this.checkSelectedTemplate();
+    },
     methods: {
         chooseImage() {
             uni.chooseImage({
@@ -264,10 +268,44 @@ export default {
                     const template = res.data.find(t => t.id === parseInt(templateId));
                     if (template) {
                         this.selectedTemplate = template;
+                        // 切换到模版生图模式
+                        this.mode = 'template';
                     }
                 }
             } catch (e) {
                 console.error('加载模版失败', e);
+            }
+        },
+        checkSelectedTemplate() {
+            // 检查全局数据或本地存储中是否有选中的模版
+            const app = getApp();
+            let template = null;
+            
+            // 优先从全局数据获取
+            if (app && app.globalData && app.globalData.selectedTemplate) {
+                template = app.globalData.selectedTemplate;
+                // 清除全局数据，避免重复使用
+                app.globalData.selectedTemplate = null;
+            } 
+            // 备选：从本地存储获取
+            else {
+                try {
+                    template = uni.getStorageSync('selectedTemplate');
+                    if (template) {
+                        uni.removeStorageSync('selectedTemplate');
+                    }
+                } catch (e) {
+                    console.error('获取存储的模版失败', e);
+                }
+            }
+            
+            // 如果找到模版，设置并切换到模版生图模式
+            if (template) {
+                this.selectedTemplate = template;
+                this.generateMode = 3; // 默认模版同款
+                this.customPrompt = ''; // 清空自定义提示词
+                // 确保切换到模版生图模式
+                this.mode = 'template';
             }
         },
         goToTemplateList() {

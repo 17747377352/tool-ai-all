@@ -12,14 +12,8 @@ import com.example.simvoice.mapper.TranslateRecordMapper;
 import com.example.simvoice.result.ResultCode;
 import com.example.simvoice.entity.ImageGenerateTask;
 import com.example.simvoice.entity.ImageTemplate;
-import com.example.simvoice.service.DailyLimitService;
-import com.example.simvoice.service.GfpganService;
 import com.example.simvoice.service.HuoshanImageService;
-import com.example.simvoice.service.ImageGenerateTaskService;
-import com.example.simvoice.service.ImageTemplateService;
-import com.example.simvoice.service.NiuTransService;
-import com.example.simvoice.service.OssService;
-import com.example.simvoice.service.ToolService;
+import com.example.simvoice.service.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -39,13 +33,11 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ToolServiceImpl implements ToolService {
 
-    private final DailyLimitService dailyLimitService;
+    private final UserQuotaService userQuotaService;
     private final ImageGenerateRecordMapper imageGenerateRecordMapper;
     private final PhotoRestoreRecordMapper photoRestoreRecordMapper;
     private final TranslateRecordMapper translateRecordMapper;
     private final HuoshanImageService huoshanImageService;
-    private final OssService ossService;
-    private final GfpganService gfpganService;
     private final NiuTransService niuTransService;
     private final ImageTemplateService imageTemplateService;
     private final ImageGenerateTaskService imageGenerateTaskService;
@@ -62,8 +54,8 @@ public class ToolServiceImpl implements ToolService {
      */
     @Override
     public String generateAiAvatar(String openid, AiAvatarDTO dto) {
-        // 1. 检查限流
-        dailyLimitService.checkAndIncrement(openid, 2);
+        // 1. 检查并消费额度
+        userQuotaService.checkAndConsume(openid, 2);
 
         // 2. 参数校验
         if (dto.getPrompt() == null || dto.getPrompt().trim().isEmpty()) {
@@ -102,33 +94,29 @@ public class ToolServiceImpl implements ToolService {
     }
 
     /**
-     * 老照片修复（GFPGAN）- 单张
+     * 老照片修复（火山引擎）- 单张
      *
      * @param openid 用户openid
      * @param dto    修复请求参数
-     * @return 修复后图片URL
+     * @return 修复后图片URL（IMAGE_LIST 单图格式）
      */
     @Override
     public String restoreOldPhoto(String openid, OldPhotoRestoreDTO dto) {
-        // 检查限流
-        dailyLimitService.checkAndIncrement(openid, 6);
+        // 检查并消费额度（功能类型3：老照片修复）
+        userQuotaService.checkAndConsume(openid, 3);
 
         if (dto.getImageUrl() == null || dto.getImageUrl().trim().isEmpty()) {
             throw new BusinessException(ResultCode.PARAM_ERROR, "图片地址不能为空");
         }
 
         try {
-            // 调用 GFPGAN 云端修复（基于可访问的原图URL）
-            byte[] restoredBytes = gfpganService.restore(dto.getImageUrl(), dto.getStrength());
-
-            // 上传到OSS（返回公网可访问的URL）
-            String fileName = "old-photo-restore/" +
-                    java.time.LocalDate.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMdd")) + "/"
-                    + java.util.UUID.randomUUID().toString() + ".png";
-            String ossUrl = ossService.uploadFile(restoredBytes, fileName, "image/png");
+            // 使用火山引擎对老照片进行修复/增强
+            // 固定的中文提示语：请将照片修复清晰，提高分辨率，消除噪点，智能修复人物面部细节。
+            String prompt = "请将照片修复清晰，提高分辨率，消除噪点，智能修复人物面部细节。";
+            String enhancedUrl = huoshanImageService.enhancePhoto(dto.getImageUrl().trim(), prompt);
 
             // 返回 IMAGE_LIST 单图格式，便于前端统一展示
-            String resultUrl = String.format("IMAGE_LIST:[\"%s\"]", ossUrl);
+            String resultUrl = String.format("IMAGE_LIST:[\"%s\"]", enhancedUrl);
 
             // 记录生成记录到老照片修复记录表
             PhotoRestoreRecord record = new PhotoRestoreRecord();
@@ -147,7 +135,7 @@ public class ToolServiceImpl implements ToolService {
     }
     
     /**
-     * 老照片批量修复（GFPGAN）
+     * 老照片批量修复（火山引擎）
      *
      * @param openid 用户openid
      * @param dto    批量修复请求参数，包含图片URL列表
@@ -166,14 +154,15 @@ public class ToolServiceImpl implements ToolService {
         
         int imageCount = dto.getImageUrls().size();
         
-        // 检查限流（批量修复每张都算一次使用）
+        // 检查并消费额度（批量修复每张都算一次使用，功能类型3：老照片修复）
         for (int i = 0; i < imageCount; i++) {
-            dailyLimitService.checkAndIncrement(openid, 6);
+            userQuotaService.checkAndConsume(openid, 6);
         }
         
         try {
             List<String> resultUrls = new java.util.ArrayList<>();
-            Double strength = dto.getStrength() != null ? dto.getStrength() : 0.7;
+            // 固定的中文提示语
+            String prompt = "请将照片修复清晰，提高分辨率，消除噪点，智能修复人物面部细节。";
             
             // 批量处理图片
             for (String imageUrl : dto.getImageUrls()) {
@@ -182,16 +171,9 @@ public class ToolServiceImpl implements ToolService {
                 }
                 
                 try {
-                    // 调用 GFPGAN 云端修复
-                    byte[] restoredBytes = gfpganService.restore(imageUrl.trim(), strength);
-                    
-                    // 上传到OSS
-                    String fileName = "old-photo-restore/" +
-                            java.time.LocalDate.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMdd")) + "/"
-                            + java.util.UUID.randomUUID().toString() + ".png";
-                    String ossUrl = ossService.uploadFile(restoredBytes, fileName, "image/png");
-                    
-                    resultUrls.add(ossUrl);
+                    // 调用火山引擎进行老照片修复/增强
+                    String enhancedUrl = huoshanImageService.enhancePhoto(imageUrl.trim(), prompt);
+                    resultUrls.add(enhancedUrl);
                 } catch (Exception e) {
                     log.error("批量修复中单张图片处理失败: imageUrl={}", imageUrl, e);
                     // 继续处理其他图片，不中断整个流程
@@ -239,8 +221,8 @@ public class ToolServiceImpl implements ToolService {
     @Override
     public String translate(String openid, TranslateDTO dto) {
         // 1. 检查限流（类型8：即时翻译，如果后续有新的类型编号，可以调整）
-        // 根据实际需求，可以扩展DailyLimit实体添加translateCount字段
-        // dailyLimitService.checkAndIncrement(openid, 8);
+        // 根据实际需求，可以扩展UserQuota实体添加translateQuota字段
+        // userQuotaService.checkAndConsume(openid, 8);
 
         // 2. 参数校验
         if (dto.getText() == null || dto.getText().trim().isEmpty()) {
@@ -271,34 +253,14 @@ public class ToolServiceImpl implements ToolService {
     }
 
     /**
-     * 使用模版生成图片（通过任务队列异步处理）
-     * 支持两种模式：
-     * 1. 模版同款（generateMode=3）：使用模版的提示词和风格生成图片
-     * 2. 模版参考图（generateMode=4）：使用模版图片作为参考图，结合提示词进行图生图
-     *
-     * @param openid 用户openid
-     * @param dto 模版生成请求参数
-     * @return 任务ID
-     */
-    @Override
-    public Long generateImageFromTemplate(String openid, TemplateGenerateDTO dto) {
-        // 兼容老接口：构造统一 DTO 再走统一入口
-        ImageGenerateTaskCreateDTO createDTO = new ImageGenerateTaskCreateDTO();
-        createDTO.setGenerateMode(dto.getGenerateMode());
-        createDTO.setTemplateId(dto.getTemplateId());
-        createDTO.setPrompt(dto.getCustomPrompt());
-        return createImageGenerateTask(openid, createDTO);
-    }
-
-    /**
      * 创建图片生成任务（统一入口）
      * 支持模式：
      * 1-字生图 2-图生图 3-模版同款 4-模版参考图
      */
     @Override
     public Long createImageGenerateTask(String openid, ImageGenerateTaskCreateDTO dto) {
-        // 1. 检查限流（生成图片）
-        dailyLimitService.checkAndIncrement(openid, 2);
+        // 1. 检查并消费额度（生成图片）
+        userQuotaService.checkAndConsume(openid, 2);
 
         if (dto.getGenerateMode() == null) {
             throw new BusinessException(ResultCode.PARAM_ERROR, "生成模式不能为空");
