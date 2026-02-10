@@ -390,8 +390,7 @@ public class ToolServiceImpl implements ToolService {
         } catch (Exception e) {
             log.error("图片生成任务失败: taskId={}", taskId, e);
             // 更新任务状态为失败
-            imageGenerateTaskService.updateTaskStatus(taskId, 3, null, 
-                    e.getMessage() != null ? e.getMessage() : "生成失败");
+            imageGenerateTaskService.updateTaskStatus(taskId, 3, null, "生成失败,请联系管理员");
         }
     }
 

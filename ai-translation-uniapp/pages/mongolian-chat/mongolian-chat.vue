@@ -44,8 +44,21 @@
         :maxlength="1000"
         placeholder="请输入要咨询的问题（支持中文等，多轮对话会自动保留上下文）"
         confirm-type="send"
+        @input="handleInputChange"
         @confirm="handleSend"
       />
+      <!-- 候选词栏（拉丁转写输入法） -->
+      <view v-if="ime.candidates.length > 0" class="ime-candidates">
+        <view
+          v-for="(c, idx) in ime.candidates"
+          :key="c.id || idx"
+          class="ime-candidate"
+          @tap="selectCandidate(idx)"
+        >
+          <text class="ime-idx">{{ idx + 1 }}.</text>
+          <text class="ime-word">{{ c.word }}</text>
+        </view>
+      </view>
       <button class="send-btn" :disabled="sending || !inputText.trim()" @tap="handleSend">
         {{ sending ? '发送中...' : '发送' }}
       </button>
@@ -65,7 +78,12 @@ export default {
       messages: [],
       inputText: '',
       sending: false,
-      scrollIntoView: ''
+      scrollIntoView: '',
+      ime: {
+        buffer: '',
+        candidates: [],
+        fetching: false
+      }
     };
   },
   onLoad() {
@@ -90,6 +108,76 @@ export default {
     });
   },
   methods: {
+    async handleInputChange(e) {
+      // 取输入框最后一个 token 作为拉丁 buffer（用空格/换行分隔）
+      const text = (this.inputText || '').toString();
+      const tokens = text.split(/[\s\n]+/);
+      const last = tokens.length > 0 ? tokens[tokens.length - 1] : '';
+      const buffer = (last || '').trim();
+
+      // 只在拉丁字符输入时触发（可按需扩展）
+      if (!buffer || !/^[a-zA-Z]+$/.test(buffer)) {
+        this.ime.buffer = '';
+        this.ime.candidates = [];
+        return;
+      }
+
+      this.ime.buffer = buffer.toLowerCase();
+      if (this.ime.fetching) return;
+
+      this.ime.fetching = true;
+      try {
+        const res = await api.imeCandidates(this.ime.buffer, 9);
+        if (res.code === 200 && Array.isArray(res.data)) {
+          this.ime.candidates = res.data;
+        } else {
+          this.ime.candidates = [];
+        }
+      } catch (err) {
+        console.error('获取输入法候选失败', err);
+        this.ime.candidates = [];
+      } finally {
+        this.ime.fetching = false;
+      }
+    },
+
+    async selectCandidate(index) {
+      const c = this.ime.candidates[index];
+      if (!c) return;
+
+      // 用候选词替换最后一个 token
+      const text = (this.inputText || '').toString();
+      const parts = text.split(/(\s+)/); // 保留空白分隔符
+      // 找到最后一个非空白 token 的索引
+      let lastTokenIdx = -1;
+      for (let i = parts.length - 1; i >= 0; i--) {
+        if (parts[i] && !/^\s+$/.test(parts[i])) {
+          lastTokenIdx = i;
+          break;
+        }
+      }
+      if (lastTokenIdx >= 0) {
+        parts[lastTokenIdx] = c.word;
+        this.inputText = parts.join('');
+        // 如果末尾不是空白，补一个空格方便继续输入
+        if (!/\s$/.test(this.inputText)) {
+          this.inputText += ' ';
+        }
+      }
+
+      // 上报选择（词频学习）
+      if (c.id) {
+        try {
+          await api.imeSelect(c.id);
+        } catch (err) {
+          console.error('上报输入法选择失败', err);
+        }
+      }
+
+      // 清空候选
+      this.ime.buffer = '';
+      this.ime.candidates = [];
+    },
     // 从本地存储加载会话历史
     loadMessagesFromStorage() {
       try {
@@ -306,6 +394,42 @@ export default {
   display: flex;
   align-items: flex-end;
   box-sizing: border-box;
+  position: relative;
+}
+
+.ime-candidates {
+  position: absolute;
+  left: 20rpx;
+  right: 20rpx;
+  bottom: 96rpx;
+  background: #ffffff;
+  border-radius: 16rpx;
+  padding: 16rpx;
+  box-shadow: 0 6rpx 18rpx rgba(0, 0, 0, 0.12);
+  max-height: 360rpx;
+  overflow: scroll;
+  z-index: 999;
+}
+
+.ime-candidate {
+  display: flex;
+  gap: 12rpx;
+  padding: 12rpx 10rpx;
+  border-radius: 12rpx;
+}
+
+.ime-candidate:active {
+  background: #f5f7ff;
+}
+
+.ime-idx {
+  color: #3a7afe;
+  font-size: 24rpx;
+}
+
+.ime-word {
+  color: #333;
+  font-size: 28rpx;
 }
 
 .input {

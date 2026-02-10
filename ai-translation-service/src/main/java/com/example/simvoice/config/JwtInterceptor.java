@@ -37,7 +37,8 @@ public class JwtInterceptor implements HandlerInterceptor {
             "/test",
             "/onlyoffice",
             "/onlyoffice-editor.html",
-            "/.well-known"
+            "/.well-known",
+            "/ime/candidates"
     );
 
     /**

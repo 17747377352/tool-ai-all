@@ -29,6 +29,36 @@ const api = {
         method: 'GET' 
     }),
     
+    // OSS STS凭证（已废弃）
+    getStsCredentials: () => request({ url: '/tool/oss/sts-credentials', method: 'GET' }),
+    
+    // 图片上传（已废弃，建议使用OSS直传）
+    uploadImage: (filePath) => {
+        return new Promise((resolve, reject) => {
+            uni.uploadFile({
+                url: apiConfig.BASE_URL + '/tool/upload-image',
+                filePath: filePath,
+                name: 'file',
+                header: {
+                    'Authorization': `Bearer ${uni.getStorageSync('token')}`
+                },
+                success: (res) => {
+                    try {
+                        const data = JSON.parse(res.data);
+                        if (data.code === 200) {
+                            resolve(data);
+                        } else {
+                            reject(data);
+                        }
+                    } catch (e) {
+                        reject({ message: '上传失败' });
+                    }
+                },
+                fail: reject
+            });
+        });
+    },
+    
     // 图片模版
     getTemplates: () => request({ url: '/tool/templates', method: 'GET' }),
     // templateGenerate: (data) => request({ url: '/tool/template-generate', method: 'POST', data }),
@@ -68,7 +98,18 @@ const api = {
     }),
     
     // 功能配置
-    getFunctionList: () => request({ url: '/api/function/list', method: 'GET' })
+    getFunctionList: () => request({ url: '/api/function/list', method: 'GET' }),
+    
+    // 蒙文输入法（拉丁转写）
+    imeCandidates: (latin, limit = 9) => request({
+        url: `/ime/candidates?latin=${encodeURIComponent(latin)}&limit=${limit}`,
+        method: 'GET'
+    }),
+    imeSelect: (wordId) => request({
+        url: '/ime/select',
+        method: 'POST',
+        data: { wordId }
+    })
 };
 
 export default api;
