@@ -31,6 +31,9 @@ const _sfc_main = {
       this.loadTemplate(options.templateId);
     }
   },
+  onShow() {
+    this.checkSelectedTemplate();
+  },
   methods: {
     chooseImage() {
       common_vendor.index.chooseImage({
@@ -43,7 +46,7 @@ const _sfc_main = {
           this.uploadImage();
         },
         fail: (err) => {
-          common_vendor.index.__f__("error", "at pages/image-generate/image-generate.vue:225", "选择图片失败", err);
+          common_vendor.index.__f__("error", "at pages/image-generate/image-generate.vue:229", "选择图片失败", err);
           common_vendor.index.showToast({
             title: "选择图片失败",
             icon: "none"
@@ -63,7 +66,7 @@ const _sfc_main = {
         this.imageUrl = imageUrl;
         common_vendor.index.hideLoading();
       } catch (e) {
-        common_vendor.index.__f__("error", "at pages/image-generate/image-generate.vue:249", "上传图片失败", e);
+        common_vendor.index.__f__("error", "at pages/image-generate/image-generate.vue:253", "上传图片失败", e);
         common_vendor.index.hideLoading();
         common_vendor.index.showToast({
           title: e.message || "上传图片失败",
@@ -80,10 +83,34 @@ const _sfc_main = {
           const template = res.data.find((t) => t.id === parseInt(templateId));
           if (template) {
             this.selectedTemplate = template;
+            this.mode = "template";
           }
         }
       } catch (e) {
-        common_vendor.index.__f__("error", "at pages/image-generate/image-generate.vue:270", "加载模版失败", e);
+        common_vendor.index.__f__("error", "at pages/image-generate/image-generate.vue:276", "加载模版失败", e);
+      }
+    },
+    checkSelectedTemplate() {
+      const app = getApp();
+      let template = null;
+      if (app && app.globalData && app.globalData.selectedTemplate) {
+        template = app.globalData.selectedTemplate;
+        app.globalData.selectedTemplate = null;
+      } else {
+        try {
+          template = common_vendor.index.getStorageSync("selectedTemplate");
+          if (template) {
+            common_vendor.index.removeStorageSync("selectedTemplate");
+          }
+        } catch (e) {
+          common_vendor.index.__f__("error", "at pages/image-generate/image-generate.vue:298", "获取存储的模版失败", e);
+        }
+      }
+      if (template) {
+        this.selectedTemplate = template;
+        this.generateMode = 3;
+        this.customPrompt = "";
+        this.mode = "template";
       }
     },
     goToTemplateList() {
@@ -126,7 +153,7 @@ const _sfc_main = {
           });
         }
       } catch (e) {
-        common_vendor.index.__f__("error", "at pages/image-generate/image-generate.vue:315", "创建任务失败", e);
+        common_vendor.index.__f__("error", "at pages/image-generate/image-generate.vue:353", "创建任务失败", e);
         common_vendor.index.showToast({
           title: "创建任务失败，请重试",
           icon: "none"
@@ -173,7 +200,7 @@ const _sfc_main = {
           });
         }
       } catch (e) {
-        common_vendor.index.__f__("error", "at pages/image-generate/image-generate.vue:365", "创建任务失败", e);
+        common_vendor.index.__f__("error", "at pages/image-generate/image-generate.vue:403", "创建任务失败", e);
         common_vendor.index.showToast({
           title: "创建任务失败，请重试",
           icon: "none"
@@ -213,7 +240,7 @@ const _sfc_main = {
           });
         }
       } catch (e) {
-        common_vendor.index.__f__("error", "at pages/image-generate/image-generate.vue:407", "创建任务失败", e);
+        common_vendor.index.__f__("error", "at pages/image-generate/image-generate.vue:445", "创建任务失败", e);
         common_vendor.index.showToast({
           title: "创建任务失败，请重试",
           icon: "none"

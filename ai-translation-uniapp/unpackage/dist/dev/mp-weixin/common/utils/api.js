@@ -9,6 +9,8 @@ const api = {
   // 工具
   // 即时翻译
   translate: (data) => common_utils_request.request({ url: "/tool/translate", method: "POST", data }),
+  // 去水印
+  removeWatermark: (data) => common_utils_request.request({ url: "/tool/remove-watermark", method: "POST", data }),
   // 老照片修复
   restoreOldPhoto: (data) => common_utils_request.request({ url: "/tool/restore-old-photo", method: "POST", data }),
   batchRestoreOldPhoto: (data) => common_utils_request.request({ url: "/tool/batch-restore-old-photo", method: "POST", data }),
@@ -62,7 +64,34 @@ const api = {
   // AI 识图
   imageRecognize: (data) => common_utils_request.request({ url: "/tool/image-recognize", method: "POST", data }),
   // 反馈
-  submitFeedback: (data) => common_utils_request.request({ url: "/feedback/submit", method: "POST", data })
+  submitFeedback: (data) => common_utils_request.request({ url: "/feedback/submit", method: "POST", data }),
+  // 广告
+  recordAdWatch: (type, rewardCount) => common_utils_request.request({
+    url: "/api/ad/record-watch",
+    method: "POST",
+    data: {
+      type,
+      rewardCount: rewardCount || 10
+    }
+  }),
+  // 分享
+  recordShare: (data) => common_utils_request.request({
+    url: "/api/share/record",
+    method: "POST",
+    data
+  }),
+  // 功能配置
+  getFunctionList: () => common_utils_request.request({ url: "/api/function/list", method: "GET" }),
+  // 蒙文输入法（拉丁转写）
+  imeCandidates: (latin, limit = 9) => common_utils_request.request({
+    url: `/ime/candidates?latin=${encodeURIComponent(latin)}&limit=${limit}`,
+    method: "GET"
+  }),
+  imeSelect: (wordId) => common_utils_request.request({
+    url: "/ime/select",
+    method: "POST",
+    data: { wordId }
+  })
 };
 exports.api = api;
 //# sourceMappingURL=../../../.sourcemap/mp-weixin/common/utils/api.js.map

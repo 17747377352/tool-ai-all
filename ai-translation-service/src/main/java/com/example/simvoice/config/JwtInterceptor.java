@@ -37,7 +37,8 @@ public class JwtInterceptor implements HandlerInterceptor {
             "/test",
             "/onlyoffice",
             "/onlyoffice-editor.html",
-            "/.well-known"
+            "/.well-known",
+            "/ime/candidates"
     );
 
     /**
@@ -63,7 +64,7 @@ public class JwtInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
         String requestURI = request.getRequestURI();
-        log.info("JWT拦截器: url={}, token={}", requestURI, request.getHeader("Authorization"));
+//        log.info("JWT拦截器: url={}, token={}", requestURI, request.getHeader("Authorization"));
         
         // 检查是否在白名单中
         if (isWhiteList(requestURI)) {

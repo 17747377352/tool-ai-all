@@ -87,3 +87,9 @@
     color: #667eea;
     font-weight: 500;
 }
+.loading.data-v-1cf27b2a {
+    text-align: center;
+    padding: 40rpx 0;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 28rpx;
+}

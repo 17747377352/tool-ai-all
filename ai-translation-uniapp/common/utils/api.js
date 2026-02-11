@@ -13,6 +13,9 @@ const api = {
     // 即时翻译
     translate: (data) => request({ url: '/tool/translate', method: 'POST', data }),
     
+    // 去水印
+    removeWatermark: (data) => request({ url: '/tool/remove-watermark', method: 'POST', data }),
+    
     // 老照片修复
     restoreOldPhoto: (data) => request({ url: '/tool/restore-old-photo', method: 'POST', data }),
     batchRestoreOldPhoto: (data) => request({ url: '/tool/batch-restore-old-photo', method: 'POST', data }),
@@ -75,7 +78,38 @@ const api = {
     imageRecognize: (data) => request({ url: '/tool/image-recognize', method: 'POST', data }),
     
     // 反馈
-    submitFeedback: (data) => request({ url: '/feedback/submit', method: 'POST', data })
+    submitFeedback: (data) => request({ url: '/feedback/submit', method: 'POST', data }),
+    
+    // 广告
+    recordAdWatch: (type, rewardCount) => request({ 
+        url: '/api/ad/record-watch', 
+        method: 'POST', 
+        data: { 
+            type: type, 
+            rewardCount: rewardCount || 10 
+        } 
+    }),
+    
+    // 分享
+    recordShare: (data) => request({ 
+        url: '/api/share/record', 
+        method: 'POST', 
+        data: data 
+    }),
+    
+    // 功能配置
+    getFunctionList: () => request({ url: '/api/function/list', method: 'GET' }),
+    
+    // 蒙文输入法（拉丁转写）
+    imeCandidates: (latin, limit = 9) => request({
+        url: `/ime/candidates?latin=${encodeURIComponent(latin)}&limit=${limit}`,
+        method: 'GET'
+    }),
+    imeSelect: (wordId) => request({
+        url: '/ime/select',
+        method: 'POST',
+        data: { wordId }
+    })
 };
 
 export default api;

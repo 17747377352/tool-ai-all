@@ -4,20 +4,15 @@ import com.example.simvoice.dto.*;
 import com.example.simvoice.entity.ImageGenerateTask;
 import com.example.simvoice.entity.ImageTemplate;
 import com.example.simvoice.result.Result;
-import com.example.simvoice.service.DoubaoVisionService;
+import com.example.simvoice.service.HuoshanImageService;
 import com.example.simvoice.service.ImageGenerateTaskService;
 import com.example.simvoice.service.ImageTemplateService;
-import com.example.simvoice.service.OssService;
 import com.example.simvoice.service.StsService;
 import com.example.simvoice.service.ToolService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,7 +22,7 @@ import java.util.stream.Collectors;
 /**
  * 工具控制器
  * 提供各种AI工具功能的HTTP接口
- * 
+ *
  * @author ai-translation-service
  * @since 1.0
  */
@@ -37,15 +32,14 @@ import java.util.stream.Collectors;
 public class ToolController {
 
     private final ToolService toolService;
-    private final OssService ossService;
     private final StsService stsService;
     private final ImageTemplateService imageTemplateService;
     private final ImageGenerateTaskService imageGenerateTaskService;
-    private final DoubaoVisionService doubaoVisionService;
+    private final HuoshanImageService huoshanImageService;
 
     /**
      * AI头像生成接口
-     * 
+     *
      * @param dto AI头像生成请求参数，包含用户上传的图片等信息
      * @param request HTTP请求对象，用于获取用户openid（从JWT拦截器注入）
      * @return 统一返回结果，包含生成的头像图片URL
@@ -65,7 +59,7 @@ public class ToolController {
     /**
      * 获取OSS PostObject签名接口
      * 用于前端直传OSS时获取签名，避免在前端暴露永久密钥
-     * 
+     *
      * @param fileName 文件名（可选），不传则自动生成
      * @param request HTTP请求对象，用于获取用户openid（从JWT拦截器注入）
      * @return 统一返回结果，包含签名信息（accessKeyId、policy、signature、host等）
@@ -89,64 +83,7 @@ public class ToolController {
     }
 
     /**
-     * 获取OSS STS临时凭证接口（已废弃，改用getPostObjectSignature）
-     * 用于前端直传OSS时获取临时凭证，避免在前端暴露永久密钥
-     * 
-     * @param request HTTP请求对象，用于获取用户openid（从JWT拦截器注入）
-     * @return 统一返回结果，包含STS临时凭证信息（accessKeyId、accessKeySecret、securityToken等）
-     */
-    @GetMapping("/oss/sts-credentials")
-    @Deprecated
-    public Result<Map<String, Object>> getStsCredentials(HttpServletRequest request) {
-        try {
-            Map<String, Object> credentials = stsService.getStsCredentials();
-            return Result.success(credentials);
-        } catch (Exception e) {
-            return Result.error("获取STS凭证失败: " + e.getMessage());
-        }
-    }
-
-    /**
-     * 图片上传接口（已废弃，建议使用前端直传OSS）
-     * 用于上传图片到OSS，返回公网可访问的URL（用于老照片修复、AI头像图生图等功能）
-     * 
-     * @param file 上传的图片文件
-     * @param request HTTP请求对象，用于获取用户openid（从JWT拦截器注入）
-     * @return 统一返回结果，包含上传后的图片URL（OSS公网地址）
-     */
-    @PostMapping("/upload-image")
-    @Deprecated
-    public Result<Map<String, String>> uploadImage(@RequestParam("file") MultipartFile file, HttpServletRequest request) {
-        try {
-            if (file == null || file.isEmpty()) {
-                return Result.error("文件不能为空");
-            }
-            
-            // 生成文件名
-            String originalFilename = file.getOriginalFilename();
-            String extension = "";
-            if (originalFilename != null && originalFilename.contains(".")) {
-                extension = originalFilename.substring(originalFilename.lastIndexOf("."));
-            }
-            String fileName = "upload/" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")) 
-                    + "/" + UUID.randomUUID().toString() + extension;
-            
-            // 上传到OSS（返回公网可访问的URL）
-            String imageUrl = ossService.uploadFile(file.getInputStream(), fileName, file.getContentType());
-            
-            Map<String, String> result = new HashMap<>();
-            result.put("imageUrl", imageUrl);
-            return Result.success(result);
-            
-        } catch (IOException e) {
-            return Result.error("图片上传失败: " + e.getMessage());
-        } catch (Exception e) {
-            return Result.error("图片上传失败: " + e.getMessage());
-        }
-    }
-
-    /**
-     * 老照片修复（GFPGAN）- 单张
+     * 老照片修复（火山引擎）- 单张
      *
      * @param dto 请求参数，包含图片URL
      * @param request HTTP请求对象，用于获取用户openid
@@ -165,7 +102,7 @@ public class ToolController {
     }
 
     /**
-     * 老照片批量修复（GFPGAN）
+     * 老照片批量修复（火山引擎）
      *
      * @param dto 批量修复请求参数，包含图片URL列表
      * @param request HTTP请求对象，用于获取用户openid
@@ -194,6 +131,9 @@ public class ToolController {
     @PostMapping("/translate")
     public Result<Map<String, String>> translate(@RequestBody TranslateDTO dto, HttpServletRequest request) {
         String openid = (String) request.getAttribute("openid");
+        if(dto.getFrom().equals(dto.getTo())){
+            return Result.error("源语言和目标语言不能相同");
+        }
         if (openid == null || openid.isEmpty()) {
             return Result.unauthorized();
         }
@@ -223,28 +163,6 @@ public class ToolController {
             map.put("description", template.getDescription());
             return map;
         }).collect(Collectors.toList());
-        return Result.success(result);
-    }
-
-    /**
-     * 使用模版生成图片（异步）
-     * 支持两种模式：
-     * 1. 模版同款（generateMode=3）：使用模版的提示词和风格生成图片
-     * 2. 模版参考图（generateMode=4）：使用模版图片作为参考图，结合提示词进行图生图
-     *
-     * @param dto 模版生成请求参数
-     * @param request HTTP请求对象，用于获取用户openid
-     * @return 统一返回结果，包含任务ID
-     */
-    @PostMapping("/template-generate")
-    public Result<Map<String, Object>> generateImageFromTemplate(@RequestBody TemplateGenerateDTO dto, HttpServletRequest request) {
-        String openid = (String) request.getAttribute("openid");
-        if (openid == null || openid.isEmpty()) {
-            return Result.unauthorized();
-        }
-        Long taskId = toolService.generateImageFromTemplate(openid, dto);
-        Map<String, Object> result = new HashMap<>();
-        result.put("taskId", taskId);
         return Result.success(result);
     }
 
@@ -316,12 +234,12 @@ public class ToolController {
             return Result.unauthorized();
         }
         ImageGenerateTask task = imageGenerateTaskService.getTaskById(taskId);
-        
+
         // 验证任务是否属于当前用户
         if (!task.getOpenid().equals(openid)) {
             return Result.error("无权访问该任务");
         }
-        
+
         Map<String, Object> result = new HashMap<>();
         result.put("id", task.getId());
         result.put("templateId", task.getTemplateId());
@@ -354,21 +272,21 @@ public class ToolController {
             return Result.unauthorized();
         }
         ImageGenerateTask task = imageGenerateTaskService.getTaskById(taskId);
-        
+
         // 验证任务是否属于当前用户
         if (!task.getOpenid().equals(openid)) {
             return Result.error("无权访问该任务");
         }
-        
+
         // 验证任务是否已完成
         if (task.getTaskStatus() != 2) {
             return Result.error("任务尚未完成，无法下载");
         }
-        
+
         if (task.getResultUrl() == null || task.getResultUrl().isEmpty()) {
             return Result.error("图片URL不存在");
         }
-        
+
         Map<String, String> result = new HashMap<>();
         result.put("downloadUrl", task.getResultUrl());
         result.put("taskId", String.valueOf(taskId));
@@ -394,7 +312,7 @@ public class ToolController {
         if (imageUrl == null || imageUrl.isEmpty()) {
             return Result.error("图片地址不能为空");
         }
-        String text = doubaoVisionService.understandImage(imageUrl, "图片主要讲了什么？请用简洁的中文总结。");
+        String text = huoshanImageService.understandImage(imageUrl, "图片主要讲了什么？请用简洁的中文总结。");
         Map<String, String> result = new HashMap<>();
         result.put("text", text);
         return Result.success(result);

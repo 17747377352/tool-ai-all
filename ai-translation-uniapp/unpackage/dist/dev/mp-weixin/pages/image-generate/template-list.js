@@ -29,12 +29,12 @@ const _sfc_main = {
       }
     },
     selectTemplate(template) {
-      const pages = getCurrentPages();
-      const prevPage = pages[pages.length - 2];
-      if (prevPage) {
-        prevPage.selectedTemplate = template;
-        prevPage.generateMode = 3;
+      const app = getApp();
+      if (app) {
+        app.globalData = app.globalData || {};
+        app.globalData.selectedTemplate = template;
       }
+      common_vendor.index.setStorageSync("selectedTemplate", template);
       common_vendor.index.navigateBack();
     }
   }

@@ -7,23 +7,134 @@ const _sfc_main = {
       messages: [],
       inputText: "",
       sending: false,
-      scrollIntoView: ""
+      scrollIntoView: "",
+      ime: {
+        buffer: "",
+        candidates: [],
+        fetching: false
+      }
     };
   },
   onLoad() {
-    const welcome = "嗨，我是你的ai蒙文小助手，需要我帮您做些什么？";
-    const welcomeMsg = {
-      role: "assistant",
-      original: welcome,
-      mo: "",
-      loadingMo: false
-    };
-    this.messages.push(welcomeMsg);
+    this.loadMessagesFromStorage();
+    if (this.messages.length === 0) {
+      const welcome = "嗨，我是你的ai蒙文小助手，需要我帮您做些什么？";
+      const welcomeMsg = {
+        role: "assistant",
+        original: welcome,
+        mo: "",
+        loadingMo: false
+      };
+      this.messages.push(welcomeMsg);
+      this.saveMessagesToStorage();
+    }
     this.$nextTick(() => {
       this.scrollToBottom();
     });
   },
   methods: {
+    async handleInputChange(e) {
+      const text = (this.inputText || "").toString();
+      const tokens = text.split(/[\s\n]+/);
+      const last = tokens.length > 0 ? tokens[tokens.length - 1] : "";
+      const buffer = (last || "").trim();
+      if (!buffer || !/^[a-zA-Z]+$/.test(buffer)) {
+        this.ime.buffer = "";
+        this.ime.candidates = [];
+        return;
+      }
+      this.ime.buffer = buffer.toLowerCase();
+      if (this.ime.fetching)
+        return;
+      this.ime.fetching = true;
+      try {
+        const res = await common_utils_api.api.imeCandidates(this.ime.buffer, 9);
+        if (res.code === 200 && Array.isArray(res.data)) {
+          this.ime.candidates = res.data;
+        } else {
+          this.ime.candidates = [];
+        }
+      } catch (err) {
+        common_vendor.index.__f__("error", "at pages/mongolian-chat/mongolian-chat.vue:137", "获取输入法候选失败", err);
+        this.ime.candidates = [];
+      } finally {
+        this.ime.fetching = false;
+      }
+    },
+    async selectCandidate(index) {
+      const c = this.ime.candidates[index];
+      if (!c)
+        return;
+      const text = (this.inputText || "").toString();
+      const parts = text.split(/(\s+)/);
+      let lastTokenIdx = -1;
+      for (let i = parts.length - 1; i >= 0; i--) {
+        if (parts[i] && !/^\s+$/.test(parts[i])) {
+          lastTokenIdx = i;
+          break;
+        }
+      }
+      if (lastTokenIdx >= 0) {
+        parts[lastTokenIdx] = c.word;
+        this.inputText = parts.join("");
+        if (!/\s$/.test(this.inputText)) {
+          this.inputText += " ";
+        }
+      }
+      if (c.id) {
+        try {
+          await common_utils_api.api.imeSelect(c.id);
+        } catch (err) {
+          common_vendor.index.__f__("error", "at pages/mongolian-chat/mongolian-chat.vue:173", "上报输入法选择失败", err);
+        }
+      }
+      this.ime.buffer = "";
+      this.ime.candidates = [];
+    },
+    // 从本地存储加载会话历史
+    loadMessagesFromStorage() {
+      try {
+        const stored = common_vendor.index.getStorageSync("mongolian_chat_messages");
+        if (stored && Array.isArray(stored) && stored.length > 0) {
+          this.messages = stored;
+          common_vendor.index.__f__("log", "at pages/mongolian-chat/mongolian-chat.vue:187", "已恢复会话历史，共", stored.length, "条消息");
+        }
+      } catch (e) {
+        common_vendor.index.__f__("error", "at pages/mongolian-chat/mongolian-chat.vue:190", "加载会话历史失败", e);
+      }
+    },
+    // 保存会话历史到本地存储
+    saveMessagesToStorage() {
+      try {
+        common_vendor.index.setStorageSync("mongolian_chat_messages", this.messages);
+      } catch (e) {
+        common_vendor.index.__f__("error", "at pages/mongolian-chat/mongolian-chat.vue:198", "保存会话历史失败", e);
+      }
+    },
+    // 清空会话历史
+    clearMessages() {
+      common_vendor.index.showModal({
+        title: "提示",
+        content: "确定要清空所有对话记录吗？",
+        success: (res) => {
+          if (res.confirm) {
+            this.messages = [];
+            const welcome = "嗨，我是你的ai蒙文小助手，需要我帮您做些什么？";
+            const welcomeMsg = {
+              role: "assistant",
+              original: welcome,
+              mo: "",
+              loadingMo: false
+            };
+            this.messages.push(welcomeMsg);
+            this.saveMessagesToStorage();
+            this.$nextTick(() => {
+              this.scrollToBottom();
+            });
+          }
+        }
+      });
+    },
     scrollToBottom() {
       if (this.messages.length === 0)
         return;
@@ -41,6 +152,7 @@ const _sfc_main = {
       }).then((res) => {
         if (res && res.data && res.data.result) {
           item.mo = res.data.result;
+          this.saveMessagesToStorage();
         } else {
           common_vendor.index.showToast({
             title: "翻译失败",
@@ -48,7 +160,7 @@ const _sfc_main = {
           });
         }
       }).catch((err) => {
-        common_vendor.index.__f__("error", "at pages/mongolian-chat/mongolian-chat.vue:107", "translate error", err);
+        common_vendor.index.__f__("error", "at pages/mongolian-chat/mongolian-chat.vue:251", "translate error", err);
         common_vendor.index.showToast({
           title: "翻译失败",
           icon: "none"
@@ -68,6 +180,7 @@ const _sfc_main = {
         loadingMo: false
       };
       this.messages.push(userMsg);
+      this.saveMessagesToStorage();
       this.inputText = "";
       this.$nextTick(() => {
         this.scrollToBottom();
@@ -91,11 +204,12 @@ const _sfc_main = {
           loadingMo: false
         };
         this.messages.push(assistantMsg);
+        this.saveMessagesToStorage();
         this.$nextTick(() => {
           this.scrollToBottom();
         });
       }).catch((err) => {
-        common_vendor.index.__f__("error", "at pages/mongolian-chat/mongolian-chat.vue:166", "mongolianChat error", err);
+        common_vendor.index.__f__("error", "at pages/mongolian-chat/mongolian-chat.vue:312", "mongolianChat error", err);
         common_vendor.index.showToast({
           title: "对话失败，请稍后重试",
           icon: "none"
@@ -107,7 +221,7 @@ const _sfc_main = {
   }
 };
 function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
-  return {
+  return common_vendor.e({
     a: common_vendor.f($data.messages, (item, index, i0) => {
       return common_vendor.e({
         a: common_vendor.t(item.original),
@@ -126,13 +240,27 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
       });
     }),
     b: $data.scrollIntoView,
-    c: common_vendor.o((...args) => $options.handleSend && $options.handleSend(...args)),
-    d: $data.inputText,
-    e: common_vendor.o(($event) => $data.inputText = $event.detail.value),
-    f: common_vendor.t($data.sending ? "发送中..." : "发送"),
-    g: $data.sending || !$data.inputText.trim(),
-    h: common_vendor.o((...args) => $options.handleSend && $options.handleSend(...args))
-  };
+    c: common_vendor.o([($event) => $data.inputText = $event.detail.value, (...args) => $options.handleInputChange && $options.handleInputChange(...args)]),
+    d: common_vendor.o((...args) => $options.handleSend && $options.handleSend(...args)),
+    e: $data.inputText,
+    f: $data.ime.candidates.length > 0
+  }, $data.ime.candidates.length > 0 ? {
+    g: common_vendor.f($data.ime.candidates, (c, idx, i0) => {
+      return {
+        a: common_vendor.t(idx + 1),
+        b: common_vendor.t(c.word),
+        c: c.id || idx,
+        d: common_vendor.o(($event) => $options.selectCandidate(idx), c.id || idx)
+      };
+    })
+  } : {}, {
+    h: common_vendor.t($data.sending ? "发送中..." : "发送"),
+    i: $data.sending || !$data.inputText.trim(),
+    j: common_vendor.o((...args) => $options.handleSend && $options.handleSend(...args)),
+    k: $data.messages.length > 1
+  }, $data.messages.length > 1 ? {
+    l: common_vendor.o((...args) => $options.clearMessages && $options.clearMessages(...args))
+  } : {});
 }
 const MiniProgramPage = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["render", _sfc_render], ["__scopeId", "data-v-84491c9e"]]);
 wx.createPage(MiniProgramPage);

@@ -11,6 +11,7 @@ if (!Math) {
   "./pages/image-generate/template-list.js";
   "./pages/image-generate/task-list.js";
   "./pages/image-recognition/image-recognition.js";
+  "./pages/watermark-removal/watermark-removal.js";
   "./pages/mongolian-chat/mongolian-chat.js";
   "./pages/result/result.js";
   "./pages/user/user.js";

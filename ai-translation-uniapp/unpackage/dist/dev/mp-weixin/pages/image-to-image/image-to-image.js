@@ -1,6 +1,7 @@
 "use strict";
 const common_vendor = require("../../common/vendor.js");
 const common_utils_api = require("../../common/utils/api.js");
+const common_config_functionType = require("../../common/config/function-type.js");
 const common_utils_ossUpload = require("../../common/utils/oss-upload.js");
 const _sfc_main = {
   data() {
@@ -30,7 +31,7 @@ const _sfc_main = {
           this.uploadImage();
         },
         fail: (err) => {
-          common_vendor.index.__f__("error", "at pages/image-to-image/image-to-image.vue:84", "选择图片失败", err);
+          common_vendor.index.__f__("error", "at pages/image-to-image/image-to-image.vue:85", "选择图片失败", err);
           common_vendor.index.showToast({
             title: "选择图片失败",
             icon: "none"
@@ -50,7 +51,7 @@ const _sfc_main = {
         this.imageUrl = imageUrl;
         common_vendor.index.hideLoading();
       } catch (e) {
-        common_vendor.index.__f__("error", "at pages/image-to-image/image-to-image.vue:109", "上传图片失败", e);
+        common_vendor.index.__f__("error", "at pages/image-to-image/image-to-image.vue:110", "上传图片失败", e);
         common_vendor.index.hideLoading();
         common_vendor.index.showToast({
           title: e.message || "上传图片失败",
@@ -84,7 +85,7 @@ const _sfc_main = {
         });
         if (res.code === 200) {
           common_vendor.index.navigateTo({
-            url: `/pages/result/result?type=2&resultUrl=${encodeURIComponent(res.data.resultUrl)}`
+            url: `/pages/result/result?type=${common_config_functionType.FUNCTION_TYPE.IMAGE_GENERATE}&resultUrl=${encodeURIComponent(res.data.resultUrl)}`
           });
         } else {
           common_vendor.index.showToast({
@@ -93,7 +94,7 @@ const _sfc_main = {
           });
         }
       } catch (e) {
-        common_vendor.index.__f__("error", "at pages/image-to-image/image-to-image.vue:156", "生成失败", e);
+        common_vendor.index.__f__("error", "at pages/image-to-image/image-to-image.vue:157", "生成失败", e);
         common_vendor.index.showToast({
           title: "生成失败，请重试",
           icon: "none"

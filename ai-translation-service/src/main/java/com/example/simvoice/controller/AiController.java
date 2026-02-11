@@ -1,8 +1,7 @@
 package com.example.simvoice.controller;
 
 import com.example.simvoice.dto.MongolianChatDTO;
-import com.example.simvoice.service.DoubaoImageService;
-import com.example.simvoice.service.KimiService;
+import com.example.simvoice.service.HuoshanImageService;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -16,46 +15,10 @@ import lombok.extern.slf4j.Slf4j;
 @RestController
 @RequestMapping("/api/ai")
 public class AiController {
-    private final KimiService kimiService;
-    private final DoubaoImageService doubaoImageService;
+    private final HuoshanImageService huoshanImageService;
 
-    public AiController(KimiService kimiService,
-                        DoubaoImageService doubaoImageService) {
-        this.kimiService = kimiService;
-        this.doubaoImageService = doubaoImageService;
-    }
-
-    /**
-     * Kimi 对话（Moonshot OpenAI compatible chat/completions）
-     * body 示例：
-     * {"prompt":"你好","system":"你是一个助手","model":"kimi-latest","temperature":0.7,"maxTokens":1024,"enableWebSearch":true,"searchMode":"accurate"}
-     */
-    @PostMapping("/kimi/chat")
-    public Map<String, Object> kimiChat(@RequestBody Map<String, Object> body, HttpServletRequest request) {
-        String prompt = str(body.get("prompt"));
-        String system = str(body.get("system"));
-        String model = str(body.get("model"));
-        Double temperature = num(body.get("temperature"));
-        Integer maxTokens = intNum(body.get("maxTokens"));
-        Boolean enableWebSearch = body.get("enableWebSearch") instanceof Boolean ? (Boolean) body.get("enableWebSearch") : null;
-        String searchMode = str(body.get("searchMode"));
-
-        Map<String, Object> raw = kimiService.chat(prompt, system, model, temperature, maxTokens, enableWebSearch, searchMode);
-        Map<String, Object> result = new LinkedHashMap<>();
-        result.put("code", 200);
-        result.put("message", "ok");
-        String content = extractChatContent(raw);
-        result.put("content", content);
-        result.put("raw", raw);
-
-        // 日志记录 Kimi 对话问答
-        String openid = request != null ? (String) request.getAttribute("openid") : null;
-        log.info("AI 对话[Kimi] openid={}, model={}, prompt={}, answer={}",
-                openid,
-                model != null ? model : "default",
-                truncate(prompt, 500),
-                truncate(content, 500));
-        return result;
+    public AiController(HuoshanImageService huoshanImageService) {
+        this.huoshanImageService = huoshanImageService;
     }
 
     /**
@@ -96,16 +59,9 @@ public class AiController {
         systemMsg.put("content", "你是一名非常了解蒙古族人生活方式和生活习惯的 AI 助手，请用简洁、友好的语气回答用户问题。");
         messages.add(0, systemMsg);
 
-        // 调用 Kimi，保持上下文
-        Map<String, Object> raw = kimiService.chatWithMessages(
-                messages,
-                dto.getModel(),
-                dto.getTemperature(),
-                dto.getMaxTokens(),
-                dto.getEnableWebSearch(),
-                dto.getSearchMode()
-        );
-        String assistantContent = extractChatContent(raw);
+        // 这里保留参数组织逻辑，将来需要切换到某个大模型时可以直接复用。
+        // 当前版本仅作为占位，实现交给前端或后续服务，暂时返回空回答。
+        String assistantContent = "";
 
         Map<String, Object> data = new LinkedHashMap<>();
         data.put("assistantText", assistantContent);
@@ -114,24 +70,7 @@ public class AiController {
         result.put("code", 200);
         result.put("message", "ok");
         result.put("data", data);
-        result.put("raw", raw);
-
-        // 从对话中取出用户最新一条 user 消息作为“提问”，记录蒙古语 AI 对话问答
-        String userQuestion = null;
-        for (int i = messages.size() - 1; i >= 0; i--) {
-            Object roleObj = messages.get(i).get("role");
-            if ("user".equals(roleObj)) {
-                Object c = messages.get(i).get("content");
-                userQuestion = c == null ? null : String.valueOf(c);
-                break;
-            }
-        }
-        String openid = request != null ? (String) request.getAttribute("openid") : null;
-        log.info("AI 对话[蒙古语] openid={}, model={}, question={}, answer={}",
-                openid,
-                dto.getModel() != null ? dto.getModel() : "default",
-                truncate(userQuestion, 500),
-                truncate(assistantContent, 500));
+        result.put("raw", null);
         return result;
     }
 
@@ -142,67 +81,9 @@ public class AiController {
      */
     @PostMapping("/doubao/image")
     public Map<String, Object> doubaoImage(@RequestBody Map<String, Object> body) {
-        String prompt = str(body.get("prompt"));
-        Integer n = intNum(body.get("n"));
-        String size = str(body.get("size"));
-        String model = str(body.get("model"));
-
-        Map<String, Object> raw = doubaoImageService.generate(prompt, n, size, model);
-        Map<String, Object> result = new LinkedHashMap<>();
-        result.put("code", 200);
-        result.put("message", "ok");
-        result.put("data", raw.get("data"));
-        result.put("raw", raw);
-        return result;
+        throw new UnsupportedOperationException("该接口已废弃，请使用小程序内置的生图功能。");
     }
 
-    @SuppressWarnings("unchecked")
-    private static String extractChatContent(Map<String, Object> raw) {
-        Object choicesObj = raw.get("choices");
-        if (!(choicesObj instanceof List)) return null;
-        List<Object> choices = (List<Object>) choicesObj;
-        if (choices.isEmpty()) return null;
-        Object c0 = choices.get(0);
-        if (!(c0 instanceof Map)) return null;
-        Map<String, Object> choice0 = (Map<String, Object>) c0;
-        Object msgObj = choice0.get("message");
-        if (!(msgObj instanceof Map)) return null;
-        Map<String, Object> msg = (Map<String, Object>) msgObj;
-        Object content = msg.get("content");
-        return content == null ? null : String.valueOf(content);
-    }
-
-    private static String str(Object o) {
-        if (o == null) return null;
-        String s = String.valueOf(o);
-        return s.trim().isEmpty() ? null : s.trim();
-    }
-
-    private static Double num(Object o) {
-        if (o == null) return null;
-        if (o instanceof Number) return ((Number) o).doubleValue();
-        try {
-            return Double.parseDouble(String.valueOf(o));
-        } catch (Exception ignored) {
-            return null;
-        }
-    }
-
-    private static Integer intNum(Object o) {
-        if (o == null) return null;
-        if (o instanceof Number) return ((Number) o).intValue();
-        try {
-            return Integer.parseInt(String.valueOf(o));
-        } catch (Exception ignored) {
-            return null;
-        }
-    }
-
-    private static String truncate(String s, int max) {
-        if (s == null) return null;
-        if (s.length() <= max) return s;
-        return s.substring(0, max) + "...(truncated)";
-    }
 }
 
 

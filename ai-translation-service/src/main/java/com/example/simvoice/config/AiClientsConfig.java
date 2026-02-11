@@ -9,7 +9,7 @@ import org.springframework.web.client.RestTemplate;
 import java.time.Duration;
 
 @Configuration
-@EnableConfigurationProperties({KimiProperties.class, DoubaoProperties.class})
+@EnableConfigurationProperties({KimiProperties.class, QuotaConfig.class})
 public class AiClientsConfig {
 
     @Bean

@@ -1,5 +1,9 @@
 package com.example.simvoice.service;
 
+import cn.hutool.core.util.StrUtil;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.example.simvoice.config.KimiProperties;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
@@ -73,7 +77,7 @@ public class KimiService {
 
         //默认开启联网搜索
         boolean useWebSearch = enableWebSearch == null ? true : Boolean.TRUE.equals(enableWebSearch);
-        useWebSearch=false;
+        useWebSearch=true;
         // Moonshot 文档要求：每次请求都完整带上 tools 声明（builtin_function + function.name = "$web_search"）
         List<Map<String, Object>> tools = null;
         if (useWebSearch) {
@@ -115,7 +119,7 @@ public class KimiService {
             lastResp = resp.getBody() == null ? Collections.emptyMap() : resp.getBody();
 
             ToolCallsParseResult parsed = parseToolCalls(lastResp);
-            if (!parsed.hasToolCalls) {
+            if (parsed == null) {
                 break;
             }
 
@@ -123,19 +127,20 @@ public class KimiService {
             ctxMessages.add(parsed.assistantMessage);
 
             // 2) 对于 $web_search：根据官方文档，我们无需真正执行搜索，只需把 arguments 原封不动回传给模型即可
-            for (Map<String, Object> tc : parsed.toolCalls) {
-                String toolCallId = asString(tc.get("id"));
-                @SuppressWarnings("unchecked")
-                Map<String, Object> fn = tc.get("function") instanceof Map ? (Map<String, Object>) tc.get("function") : null;
-                String name = fn == null ? null : asString(fn.get("name"));
-                String arguments = fn == null ? null : asString(fn.get("arguments"));
+            for (int i = 0; i < parsed.toolCalls.size(); i++) {
+                JSONObject tc = parsed.toolCalls.getJSONObject(i);
+                if (tc == null) continue;
+                String toolCallId = tc.getString("id");
+                JSONObject fn = tc.getJSONObject("function");
+                String name = fn == null ? null : fn.getString("name");
+                String arguments = fn == null ? null : fn.getString("arguments");
 
                 Map<String, Object> toolMsg = new LinkedHashMap<>();
                 toolMsg.put("role", "tool");
                 toolMsg.put("tool_call_id", toolCallId);
                 toolMsg.put("name", name);
                 // 直接回传 arguments（字符串），等价于 Python 示例里的 json.dumps(arguments_obj)
-                toolMsg.put("content", arguments == null ? "{}" : arguments);
+                toolMsg.put("content", StrUtil.blankToDefault(arguments, "{}"));
                 ctxMessages.add(toolMsg);
             }
         }
@@ -158,54 +163,46 @@ public class KimiService {
     }
 
     private static final class ToolCallsParseResult {
-        final boolean hasToolCalls;
         final Map<String, Object> assistantMessage;
-        final List<Map<String, Object>> toolCalls;
+        final JSONArray toolCalls;
 
-        private ToolCallsParseResult(boolean hasToolCalls,
-                                     Map<String, Object> assistantMessage,
-                                     List<Map<String, Object>> toolCalls) {
-            this.hasToolCalls = hasToolCalls;
+        private ToolCallsParseResult(Map<String, Object> assistantMessage, JSONArray toolCalls) {
             this.assistantMessage = assistantMessage;
             this.toolCalls = toolCalls;
         }
     }
 
-    @SuppressWarnings("unchecked")
+    /**
+     * 使用 Fastjson 解析 tool_calls，避免 Map 强转 + @SuppressWarnings。
+     *
+     * @return 如果本轮不是 tool_calls，则返回 null
+     */
     private static ToolCallsParseResult parseToolCalls(Map<String, Object> resp) {
-        Object choicesObj = resp == null ? null : resp.get("choices");
-        if (!(choicesObj instanceof List) || ((List<?>) choicesObj).isEmpty()) {
-            return new ToolCallsParseResult(false, null, Collections.emptyList());
-        }
-        Object c0 = ((List<?>) choicesObj).get(0);
-        if (!(c0 instanceof Map)) {
-            return new ToolCallsParseResult(false, null, Collections.emptyList());
-        }
-        Map<String, Object> choice0 = (Map<String, Object>) c0;
-        Object finishReason = choice0.get("finish_reason");
-        Object msgObj = choice0.get("message");
-        if (!(msgObj instanceof Map)) {
-            return new ToolCallsParseResult(false, null, Collections.emptyList());
-        }
-        Map<String, Object> message = (Map<String, Object>) msgObj;
+        if (resp == null || resp.isEmpty()) return null;
 
-        Object toolCallsObj = message.get("tool_calls");
-        boolean has = "tool_calls".equals(String.valueOf(finishReason)) && (toolCallsObj instanceof List) && !((List<?>) toolCallsObj).isEmpty();
-        if (!has) {
-            return new ToolCallsParseResult(false, null, Collections.emptyList());
-        }
+        JSONObject root = (JSONObject) JSON.toJSON(resp);
+        JSONArray choices = root.getJSONArray("choices");
+        if (choices == null || choices.isEmpty()) return null;
 
-        // 直接把 message 作为 assistant 消息塞回上下文（包含 tool_calls）
+        JSONObject choice0 = choices.getJSONObject(0);
+        if (choice0 == null) return null;
+
+        String finishReason = choice0.getString("finish_reason");
+        if (!"tool_calls".equals(finishReason)) return null;
+
+        JSONObject message = choice0.getJSONObject("message");
+        if (message == null) return null;
+
+        JSONArray toolCalls = message.getJSONArray("tool_calls");
+        if (toolCalls == null || toolCalls.isEmpty()) return null;
+
+        // 把 assistant 消息塞回上下文（包含 tool_calls）
         Map<String, Object> assistantMsg = new LinkedHashMap<>();
         assistantMsg.put("role", "assistant");
         if (message.containsKey("content")) assistantMsg.put("content", message.get("content"));
-        assistantMsg.put("tool_calls", toolCallsObj);
+        assistantMsg.put("tool_calls", toolCalls);
 
-        return new ToolCallsParseResult(true, assistantMsg, (List<Map<String, Object>>) toolCallsObj);
-    }
-
-    private static String asString(Object o) {
-        return o == null ? null : String.valueOf(o);
+        return new ToolCallsParseResult(assistantMsg, toolCalls);
     }
 }
 

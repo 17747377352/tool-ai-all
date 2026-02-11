@@ -8,6 +8,7 @@
     "pages/image-generate/template-list",
     "pages/image-generate/task-list",
     "pages/image-recognition/image-recognition",
+    "pages/watermark-removal/watermark-removal",
     "pages/mongolian-chat/mongolian-chat",
     "pages/result/result",
     "pages/user/user",
