@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 /**
  * 工具控制器
  * 提供各种AI工具功能的HTTP接口
- * 
+ *
  * @author ai-translation-service
  * @since 1.0
  */
@@ -39,7 +39,7 @@ public class ToolController {
 
     /**
      * AI头像生成接口
-     * 
+     *
      * @param dto AI头像生成请求参数，包含用户上传的图片等信息
      * @param request HTTP请求对象，用于获取用户openid（从JWT拦截器注入）
      * @return 统一返回结果，包含生成的头像图片URL
@@ -59,7 +59,7 @@ public class ToolController {
     /**
      * 获取OSS PostObject签名接口
      * 用于前端直传OSS时获取签名，避免在前端暴露永久密钥
-     * 
+     *
      * @param fileName 文件名（可选），不传则自动生成
      * @param request HTTP请求对象，用于获取用户openid（从JWT拦截器注入）
      * @return 统一返回结果，包含签名信息（accessKeyId、policy、signature、host等）
@@ -234,12 +234,12 @@ public class ToolController {
             return Result.unauthorized();
         }
         ImageGenerateTask task = imageGenerateTaskService.getTaskById(taskId);
-        
+
         // 验证任务是否属于当前用户
         if (!task.getOpenid().equals(openid)) {
             return Result.error("无权访问该任务");
         }
-        
+
         Map<String, Object> result = new HashMap<>();
         result.put("id", task.getId());
         result.put("templateId", task.getTemplateId());
@@ -272,21 +272,21 @@ public class ToolController {
             return Result.unauthorized();
         }
         ImageGenerateTask task = imageGenerateTaskService.getTaskById(taskId);
-        
+
         // 验证任务是否属于当前用户
         if (!task.getOpenid().equals(openid)) {
             return Result.error("无权访问该任务");
         }
-        
+
         // 验证任务是否已完成
         if (task.getTaskStatus() != 2) {
             return Result.error("任务尚未完成，无法下载");
         }
-        
+
         if (task.getResultUrl() == null || task.getResultUrl().isEmpty()) {
             return Result.error("图片URL不存在");
         }
-        
+
         Map<String, String> result = new HashMap<>();
         result.put("downloadUrl", task.getResultUrl());
         result.put("taskId", String.valueOf(taskId));

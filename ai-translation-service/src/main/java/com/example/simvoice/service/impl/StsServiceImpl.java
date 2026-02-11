@@ -57,6 +57,41 @@ public class StsServiceImpl implements StsService {
     }
 
     @Override
+    public Map<String, Object> getStsCredentials() {
+        Map<String, Object> result = new HashMap<>();
+        
+        try {
+            // 注意：这里直接返回主账号的AccessKey（仅用于开发测试）
+            // 生产环境应该使用RAM角色和STS AssumeRole获取临时凭证
+            log.warn("使用主账号AccessKey作为临时凭证，仅用于开发测试！生产环境请使用RAM角色。");
+            
+            result.put("accessKeyId", ossProperties.getAccessKeyId());
+            result.put("accessKeySecret", ossProperties.getAccessKeySecret());
+            result.put("securityToken", ""); // 主账号没有token
+            result.put("expiration", System.currentTimeMillis() / 1000 + durationSeconds);
+            result.put("bucket", ossProperties.getBucketName());
+            
+            // 从endpoint提取region用于OSS客户端
+            String endpoint = ossProperties.getEndpoint();
+            String ossRegion = region;
+            if (endpoint.contains("oss-cn-")) {
+                int start = endpoint.indexOf("oss-cn-") + 7;
+                int end = endpoint.indexOf(".aliyuncs.com");
+                if (end > start) {
+                    ossRegion = endpoint.substring(start, end);
+                }
+            }
+            result.put("ossRegion", ossRegion);
+            
+            return result;
+            
+        } catch (Exception e) {
+            log.error("获取STS凭证失败", e);
+            throw new RuntimeException("获取STS凭证失败: " + e.getMessage());
+        }
+    }
+    
+    @Override
     public Map<String, Object> getPostObjectSignature(String fileName) {
         try {
             // 构建OSS host

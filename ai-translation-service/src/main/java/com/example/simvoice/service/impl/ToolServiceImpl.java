@@ -24,7 +24,7 @@ import java.util.List;
 /**
  * 工具服务实现类
  * 实现各种AI工具功能的核心业务逻辑
- * 
+ *
  * @author ai-translation-service
  * @since 1.0
  */
@@ -133,7 +133,7 @@ public class ToolServiceImpl implements ToolService {
             throw new RuntimeException("老照片修复失败: " + e.getMessage(), e);
         }
     }
-    
+
     /**
      * 老照片批量修复（火山引擎）
      *
@@ -147,29 +147,29 @@ public class ToolServiceImpl implements ToolService {
         if (dto.getImageUrls() == null || dto.getImageUrls().isEmpty()) {
             throw new BusinessException(ResultCode.PARAM_ERROR, "图片列表不能为空");
         }
-        
+
         if (dto.getImageUrls().size() > 10) {
             throw new BusinessException(ResultCode.PARAM_ERROR, "最多只能批量处理10张图片");
         }
-        
+
         int imageCount = dto.getImageUrls().size();
-        
+
         // 检查并消费额度（批量修复每张都算一次使用，功能类型3：老照片修复）
         for (int i = 0; i < imageCount; i++) {
             userQuotaService.checkAndConsume(openid, 6);
         }
-        
+
         try {
             List<String> resultUrls = new java.util.ArrayList<>();
             // 固定的中文提示语
             String prompt = "请将照片修复清晰，提高分辨率，消除噪点，智能修复人物面部细节。";
-            
+
             // 批量处理图片
             for (String imageUrl : dto.getImageUrls()) {
                 if (imageUrl == null || imageUrl.trim().isEmpty()) {
                     continue;
                 }
-                
+
                 try {
                     // 调用火山引擎进行老照片修复/增强
                     String enhancedUrl = huoshanImageService.enhancePhoto(imageUrl.trim(), prompt);
@@ -179,17 +179,17 @@ public class ToolServiceImpl implements ToolService {
                     // 继续处理其他图片，不中断整个流程
                 }
             }
-            
+
             if (resultUrls.isEmpty()) {
                 throw new BusinessException(ResultCode.ERROR, "所有图片处理失败，请检查图片URL是否有效");
             }
-            
+
             // 构建结果URL列表
             String resultUrlList = resultUrls.stream()
                     .map(url -> "\"" + url + "\"")
                     .collect(java.util.stream.Collectors.joining(","));
             String resultUrl = String.format("IMAGE_LIST:[%s]", resultUrlList);
-            
+
             // 记录生成记录到老照片修复记录表
             PhotoRestoreRecord record = new PhotoRestoreRecord();
             record.setOpenid(openid);
@@ -197,10 +197,10 @@ public class ToolServiceImpl implements ToolService {
             record.setResultUrl(resultUrl);
             record.setCreateTime(LocalDateTime.now());
             photoRestoreRecordMapper.insert(record);
-            
-            log.info("批量修复成功: openid={}, 处理数量={}, 成功数量={}", 
+
+            log.info("批量修复成功: openid={}, 处理数量={}, 成功数量={}",
                     openid, dto.getImageUrls().size(), resultUrls.size());
-            
+
             return resultUrl;
         } catch (BusinessException e) {
             throw e;
@@ -241,7 +241,7 @@ public class ToolServiceImpl implements ToolService {
         recordData.put("from", dto.getFrom());
         recordData.put("to", dto.getTo());
         recordData.put("translatedText", result);
-        
+
         TranslateRecord record = new TranslateRecord();
         record.setOpenid(openid);
         record.setInputData(JSONObject.toJSONString(dto));
@@ -331,7 +331,7 @@ public class ToolServiceImpl implements ToolService {
 
         return taskId;
     }
-    
+
     /**
      * 执行图片生成任务
      * @param taskId 任务ID
@@ -340,13 +340,13 @@ public class ToolServiceImpl implements ToolService {
         try {
             // 1. 更新任务状态为生成中
             imageGenerateTaskService.updateTaskStatus(taskId, 1, null, null);
-            
+
             // 2. 获取任务信息
             ImageGenerateTask task = imageGenerateTaskService.getTaskById(taskId);
-            
-            log.info("开始执行图片生成任务: taskId={}, openid={}, mode={}", 
+
+            log.info("开始执行图片生成任务: taskId={}, openid={}, mode={}",
                     taskId, task.getOpenid(), task.getGenerateMode());
-            
+
             String resultUrl;
 
             // 3. 根据生成模式调用不同的生成方法：
@@ -367,10 +367,10 @@ public class ToolServiceImpl implements ToolService {
             } else {
                 throw new BusinessException(ResultCode.PARAM_ERROR, "生成模式无效: " + mode);
             }
-            
+
             // 4. 更新任务状态为已完成
             imageGenerateTaskService.updateTaskStatus(taskId, 2, resultUrl, null);
-            
+
             // 5. 保存生成记录到图片生成记录表
             ImageGenerateRecord record = new ImageGenerateRecord();
             record.setOpenid(task.getOpenid());
@@ -384,13 +384,14 @@ public class ToolServiceImpl implements ToolService {
             record.setResultUrl(resultUrl);
             record.setCreateTime(LocalDateTime.now());
             imageGenerateRecordMapper.insert(record);
-            
+
             log.info("图片生成任务完成: taskId={}, resultUrl={}", taskId, resultUrl);
-            
+
         } catch (Exception e) {
             log.error("图片生成任务失败: taskId={}", taskId, e);
             // 更新任务状态为失败
-            imageGenerateTaskService.updateTaskStatus(taskId, 3, null, "生成失败,请联系管理员");
+            imageGenerateTaskService.updateTaskStatus(taskId, 3, null,
+                    e.getMessage() != null ? e.getMessage() : "生成失败");
         }
     }
 

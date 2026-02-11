@@ -8,7 +8,7 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 /**
- * 老照片修复记录表（功能类型3：老照片修复）
+ * 老照片修复记录表（类型6：老照片修复）
  */
 @Data
 @TableName("t_photo_restore_record")

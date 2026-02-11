@@ -8,7 +8,7 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 /**
- * 翻译记录表（功能类型4：AI识图+翻译 功能类型5：即时翻译）
+ * 翻译记录表（类型7：即时翻译/AI识图+翻译）
  */
 @Data
 @TableName("t_translate_record")

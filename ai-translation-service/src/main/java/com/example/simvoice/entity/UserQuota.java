@@ -28,22 +28,22 @@ public class UserQuota {
     private Integer removeLogoQuota;
     
     /**
-     * 生成图片额度（功能类型2）
+     * AI头像生成额度
      */
     private Integer aiAvatarQuota;
     
     /**
-     * AI识图+翻译额度（功能类型4，复用原nameSignQuota字段）
+     * 姓氏签名生成额度
      */
     private Integer nameSignQuota;
     
     /**
-     * 即时翻译额度（功能类型5，复用原fortuneQuota字段）
+     * 运势测试额度
      */
     private Integer fortuneQuota;
     
     /**
-     * 星座运势查询额度（已废弃，保留字段）
+     * 星座运势查询额度
      */
     private Integer constellationQuota;
     

@@ -1,6 +1,7 @@
 package com.example.simvoice.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.example.simvoice.config.QuotaConfig;
 import com.example.simvoice.entity.UserQuota;
 import com.example.simvoice.exception.BusinessException;
 import com.example.simvoice.mapper.UserQuotaMapper;
@@ -23,9 +24,7 @@ import java.time.LocalDateTime;
 public class UserQuotaServiceImpl implements UserQuotaService {
 
     private final UserQuotaMapper userQuotaMapper;
-
-    // 新用户默认额度
-    private static final int DEFAULT_OTHER_QUOTA = 10;
+    private final QuotaConfig quotaConfig;
 
     @Override
     public UserQuota getOrCreateQuota(String openid) {
@@ -33,15 +32,16 @@ public class UserQuotaServiceImpl implements UserQuotaService {
                 .eq(UserQuota::getOpenid, openid));
 
         if (quota == null) {
-            // 创建新用户额度记录，设置默认额度
+            // 创建新用户额度记录，设置默认额度（从配置文件读取）
+            int defaultQuota = quotaConfig.getDefaultInitQuota();
             quota = new UserQuota();
             quota.setOpenid(openid);
-            quota.setRemoveLogoQuota(DEFAULT_OTHER_QUOTA);
-            quota.setAiAvatarQuota(DEFAULT_OTHER_QUOTA);
-            quota.setNameSignQuota(DEFAULT_OTHER_QUOTA);
-            quota.setFortuneQuota(DEFAULT_OTHER_QUOTA);
-            quota.setConstellationQuota(DEFAULT_OTHER_QUOTA);
-            quota.setRestorePhotoQuota(DEFAULT_OTHER_QUOTA);
+            quota.setRemoveLogoQuota(defaultQuota);
+            quota.setAiAvatarQuota(defaultQuota);
+            quota.setNameSignQuota(defaultQuota);
+            quota.setFortuneQuota(defaultQuota);
+            quota.setConstellationQuota(defaultQuota);
+            quota.setRestorePhotoQuota(defaultQuota);
             quota.setCreateTime(LocalDateTime.now());
             quota.setUpdateTime(LocalDateTime.now());
             userQuotaMapper.insert(quota);
@@ -78,29 +78,37 @@ public class UserQuotaServiceImpl implements UserQuotaService {
                 }
                 quota.setAiAvatarQuota(currentQuota - 1);
                 break;
-            case 3: // 老照片修复
+            case 3: // 姓氏签名
+                currentQuota = quota.getNameSignQuota();
+                typeName = "姓氏签名";
+                if (currentQuota <= 0) {
+                    throw new BusinessException(ResultCode.DAILY_LIMIT_EXCEEDED, "姓氏签名额度不足，请观看广告或分享获取更多额度");
+                }
+                quota.setNameSignQuota(currentQuota - 1);
+                break;
+            case 4: // 运势测试
+                currentQuota = quota.getFortuneQuota();
+                typeName = "运势测试";
+                if (currentQuota <= 0) {
+                    throw new BusinessException(ResultCode.DAILY_LIMIT_EXCEEDED, "运势测试额度不足，请观看广告或分享获取更多额度");
+                }
+                quota.setFortuneQuota(currentQuota - 1);
+                break;
+            case 5: // 星座运势
+                currentQuota = quota.getConstellationQuota();
+                typeName = "星座运势";
+                if (currentQuota <= 0) {
+                    throw new BusinessException(ResultCode.DAILY_LIMIT_EXCEEDED, "星座运势额度不足，请观看广告或分享获取更多额度");
+                }
+                quota.setConstellationQuota(currentQuota - 1);
+                break;
+            case 6: // 老照片修复
                 currentQuota = quota.getRestorePhotoQuota();
                 typeName = "老照片修复";
                 if (currentQuota <= 0) {
                     throw new BusinessException(ResultCode.DAILY_LIMIT_EXCEEDED, "老照片修复额度不足，请观看广告或分享获取更多额度");
                 }
                 quota.setRestorePhotoQuota(currentQuota - 1);
-                break;
-            case 4: // AI识图+翻译
-                currentQuota = quota.getNameSignQuota(); // 复用nameSignQuota字段
-                typeName = "AI识图+翻译";
-                if (currentQuota <= 0) {
-                    throw new BusinessException(ResultCode.DAILY_LIMIT_EXCEEDED, "AI识图+翻译额度不足，请观看广告或分享获取更多额度");
-                }
-                quota.setNameSignQuota(currentQuota - 1);
-                break;
-            case 5: // 即时翻译
-                currentQuota = quota.getFortuneQuota(); // 复用fortuneQuota字段
-                typeName = "即时翻译";
-                if (currentQuota <= 0) {
-                    throw new BusinessException(ResultCode.DAILY_LIMIT_EXCEEDED, "即时翻译额度不足，请观看广告或分享获取更多额度");
-                }
-                quota.setFortuneQuota(currentQuota - 1);
                 break;
             default:
                 throw new BusinessException(ResultCode.PARAM_ERROR, "无效的功能类型");
@@ -114,7 +122,7 @@ public class UserQuotaServiceImpl implements UserQuotaService {
     @Override
     public int addQuota(String openid, Integer type, Integer amount) {
         if (amount == null || amount <= 0) {
-            amount = 10; // 默认增加10次
+            amount = quotaConfig.getShareRewardQuota(); // 默认增加额度（从配置文件读取）
         }
 
         UserQuota quota = getOrCreateQuota(openid);
@@ -132,20 +140,25 @@ public class UserQuotaServiceImpl implements UserQuotaService {
                 newQuota = currentQuota + amount;
                 quota.setAiAvatarQuota(newQuota);
                 break;
-            case 3: // 老照片修复
-                currentQuota = quota.getRestorePhotoQuota();
-                newQuota = currentQuota + amount;
-                quota.setRestorePhotoQuota(newQuota);
-                break;
-            case 4: // AI识图+翻译
-                currentQuota = quota.getNameSignQuota(); // 复用nameSignQuota字段
+            case 3: // 姓氏签名
+                currentQuota = quota.getNameSignQuota();
                 newQuota = currentQuota + amount;
                 quota.setNameSignQuota(newQuota);
                 break;
-            case 5: // 即时翻译
-                currentQuota = quota.getFortuneQuota(); // 复用fortuneQuota字段
+            case 4: // 运势测试
+                currentQuota = quota.getFortuneQuota();
                 newQuota = currentQuota + amount;
                 quota.setFortuneQuota(newQuota);
+                break;
+            case 5: // 星座运势
+                currentQuota = quota.getConstellationQuota();
+                newQuota = currentQuota + amount;
+                quota.setConstellationQuota(newQuota);
+                break;
+            case 6: // 老照片修复
+                currentQuota = quota.getRestorePhotoQuota();
+                newQuota = currentQuota + amount;
+                quota.setRestorePhotoQuota(newQuota);
                 break;
             default:
                 throw new BusinessException(ResultCode.PARAM_ERROR, "无效的功能类型");
@@ -165,12 +178,14 @@ public class UserQuotaServiceImpl implements UserQuotaService {
                 return quota.getRemoveLogoQuota();
             case 2: // 生成图片
                 return quota.getAiAvatarQuota();
-            case 3: // 老照片修复
+            case 3: // 姓氏签名
+                return quota.getNameSignQuota();
+            case 4: // 运势测试
+                return quota.getFortuneQuota();
+            case 5: // 星座运势
+                return quota.getConstellationQuota();
+            case 6: // 老照片修复
                 return quota.getRestorePhotoQuota();
-            case 4: // AI识图+翻译
-                return quota.getNameSignQuota(); // 复用nameSignQuota字段
-            case 5: // 即时翻译
-                return quota.getFortuneQuota(); // 复用fortuneQuota字段
             default:
                 throw new BusinessException(ResultCode.PARAM_ERROR, "无效的功能类型");
         }

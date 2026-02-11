@@ -1,3 +1,4 @@
+
 package com.example.simvoice.controller;
 
 import com.example.simvoice.dto.ShareDTO;
@@ -13,7 +14,7 @@ import java.util.Map;
 /**
  * 分享控制器
  * 提供分享功能相关接口
- * 
+ *
  * @author ai-translation-service
  * @since 1.0
  */
@@ -28,14 +29,14 @@ public class ShareController {
     /**
      * POST请求 /api/share/record
      * 记录分享并给分享人增加额度
-     * 
+     *
      * 请求体示例：
      * {
      *   "type": 1,  // 功能类型：1-去水印 2-生成图片 3-老照片修复 4-AI识图+翻译 5-即时翻译
      *   "inviteeOpenid": "被邀请人openid",
      *   "rewardCount": 10  // 可选，奖励次数，默认10次
      * }
-     * 
+     *
      * @param dto 分享请求参数
      * @param request HTTP请求对象，用于获取分享人openid（从JWT拦截器注入）
      * @return 统一返回结果，包含奖励信息等
@@ -55,9 +56,9 @@ public class ShareController {
         }
 
         Map<String, Object> result = shareService.recordShare(
-                sharerOpenid, 
-                dto.getInviteeOpenid(), 
-                dto.getType(), 
+                sharerOpenid,
+                dto.getInviteeOpenid(),
+                dto.getType(),
                 dto.getRewardCount());
         return Result.success("分享成功，已增加使用次数", result);
     }

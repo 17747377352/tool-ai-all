@@ -1,3 +1,4 @@
+
 package com.example.simvoice.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -18,7 +19,7 @@ import java.util.Map;
 /**
  * 分享服务实现类
  * 实现分享功能相关服务
- * 
+ *
  * @author ai-translation-service
  * @since 1.0
  */
@@ -54,7 +55,7 @@ public class ShareServiceImpl implements ShareService {
                 .eq(ShareRecord::getSharerOpenid, sharerOpenid)
                 .eq(ShareRecord::getInviteeOpenid, inviteeOpenid)
                 .eq(ShareRecord::getType, type));
-        
+
         if (existingRecord != null) {
             throw new BusinessException(ResultCode.PARAM_ERROR, "您已经分享过此功能给该用户");
         }
@@ -69,10 +70,10 @@ public class ShareServiceImpl implements ShareService {
 
         // 给分享人增加额度
         int newQuota = userQuotaService.addQuota(sharerOpenid, type, rewardCount);
-        
+
         // 获取分享人剩余额度
         int remainingQuota = userQuotaService.getRemainingQuota(sharerOpenid, type);
-        
+
         // 功能名称
         String typeName = getTypeName(type);
 
@@ -88,7 +89,7 @@ public class ShareServiceImpl implements ShareService {
 
         return result;
     }
-    
+
     /**
      * 获取功能类型名称
      */

@@ -1,3 +1,4 @@
+
 package com.example.simvoice.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
@@ -16,22 +17,22 @@ import java.time.LocalDateTime;
 public class ShareRecord {
     @TableId(type = IdType.AUTO)
     private Long id;
-    
+
     /**
      * 分享人openid（邀请人）
      */
     private String sharerOpenid;
-    
+
     /**
      * 被邀请人openid
      */
     private String inviteeOpenid;
-    
+
     /**
      * 功能类型：1-去水印 2-生成图片 3-老照片修复 4-AI识图+翻译 5-即时翻译
      */
     private Integer type;
-    
+
     /**
      * 创建时间
      */

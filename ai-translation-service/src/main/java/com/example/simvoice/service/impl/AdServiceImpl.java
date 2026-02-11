@@ -1,5 +1,6 @@
 package com.example.simvoice.service.impl;
 
+import com.example.simvoice.config.QuotaConfig;
 import com.example.simvoice.service.AdService;
 import com.example.simvoice.service.UserQuotaService;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,7 @@ import java.util.Map;
 public class AdServiceImpl implements AdService {
 
     private final UserQuotaService userQuotaService;
+    private final QuotaConfig quotaConfig;
 
     @Override
     public Map<String, Object> recordAdWatch(String openid, Integer type, Integer rewardCount) {
@@ -30,7 +32,7 @@ public class AdServiceImpl implements AdService {
         }
 
         if (rewardCount == null || rewardCount <= 0) {
-            rewardCount = 10; // 默认奖励10次
+            rewardCount = quotaConfig.getAdRewardQuota(); // 默认奖励额度（从配置文件读取）
         }
 
         // 增加额度
@@ -64,11 +66,13 @@ public class AdServiceImpl implements AdService {
             case 2:
                 return "生成图片";
             case 3:
-                return "老照片修复";
+                return "姓氏签名";
             case 4:
-                return "AI识图+翻译";
+                return "运势测试";
             case 5:
-                return "即时翻译";
+                return "星座运势";
+            case 6:
+                return "老照片修复";
             default:
                 return "未知功能";
         }
