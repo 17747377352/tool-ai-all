@@ -10,10 +10,10 @@
 
 // 后端服务基础地址
 // 开发环境 - ai-translation-service端口为18090
-const BASE_URL = 'http://localhost:18090';
+// const BASE_URL = 'http://localhost:18090';
 
 // 生产环境（部署时取消注释并修改）
-// const BASE_URL = 'https://www.songtop.xyz/translation';
+const BASE_URL = 'https://www.songtop.xyz/translation';
 // const BASE_URL = 'http://123.56.22.101:18090/translation';
 
 export default {

@@ -141,7 +141,7 @@
   .tool-item {
     grid-column: span 2;
     width: 100%;
-    height: 180rpx;
+    height: 160rpx;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -158,8 +158,8 @@
   }
 
   .tool-icon {
-    width: 80rpx;
-    height: 80rpx;
+    width: 70rpx;
+    height: 70rpx;
   }
 
   .tool-name {
@@ -174,7 +174,8 @@
   .project-box {
     display: grid;
     gap: 20rpx;
-    padding: 0 20rpx;
+    padding: 0 30rpx;
+    padding-bottom: 50rpx;
     grid-template-columns: 1fr 1fr;
   }
 
@@ -188,17 +189,5 @@
   .project-img {
     width: 100%;
     height: 100%;
-  }
-
-  .feedback-icon {
-    font-size: 48rpx;
-    line-height: 1;
-    margin-bottom: 8rpx;
-  }
-
-  .feedback-text {
-    font-size: 22rpx;
-    color: #667eea;
-    font-weight: 500;
   }
 </style>

@@ -177,7 +177,6 @@
 <style scoped lang="scss">
   .page {
     height: 100vh;
-    background-color: #f5f5f5;
   }
 
   .chat-body {
@@ -208,7 +207,7 @@
     background-color: #a854ff;
     color: #fff;
     writing-mode: vertical-lr;
-    font-family: mgl;
+    font-family: hw;
     font-size: 32rpx;
     display: flex;
     align-items: center;
@@ -228,15 +227,15 @@
     width: max-content;
     height: max-content;
     max-height: 70vh;
-    background-color: #ffffff;
     border-radius: 16rpx;
     padding: 30rpx 20rpx;
-    box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.04);
     writing-mode: vertical-lr;
-    font-family: mgl;
+    font-family: hw;
     font-size: 40rpx;
     line-height: 50rpx;
     position: relative;
+    background-color: rgb(44, 44, 44);
+    color: #fff;
 
     &::after {
       content: '';
@@ -245,7 +244,7 @@
       height: 20rpx;
       left: 35rpx;
       top: -10rpx;
-      background-color: #fff;
+      background-color: rgb(44, 44, 44);
       transform: rotate(45deg);
     }
   }
@@ -256,8 +255,8 @@
     }
 
     .msg-bubble {
-      background: rgb(149, 236, 105);
-      color: rgb(15, 23, 10);
+      background: rgb(187, 27, 42);
+      color: #fff;
 
       &::after {
         content: '';
@@ -267,7 +266,7 @@
         left: 35rpx;
         top: initial;
         bottom: -10rpx;
-        background-color: rgb(149, 236, 105);
+        background-color: rgb(187, 27, 42);
         transform: rotate(45deg);
       }
     }
