@@ -6,3 +6,22 @@ spring:
     active: dev
   application:
     name: ai-translation-service
+
+# 额度配置
+quota:
+  # 新用户默认初始化额度
+  default-init-quota: 3
+  # 分享增加额度（每次分享获得的额度）
+  share-reward-quota: 3
+  # 广告观看奖励额度（每次观看广告获得的额度）
+  ad-reward-quota: 3
+
+# 微信支付配置
+wechat:
+  pay:
+    # 商户号（需要在微信支付平台申请）
+    mch-id: YOUR_MCH_ID
+    # API密钥（在微信支付平台设置）
+    api-key: YOUR_API_KEY
+    # 支付回调通知地址（需要配置为公网可访问的地址）
+    notify-url: http://your-domain.com/api/pay/notify

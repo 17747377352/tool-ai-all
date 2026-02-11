@@ -11,12 +11,12 @@ public interface ImeService {
     /**
      * 根据拉丁输入获取候选词（精确+前缀）
      */
-    List<ImeCandidateDTO> candidates(String latin, int limit);
+    List<ImeCandidateDTO> candidates(String latin);
 
     /**
-     * 用户选择候选词，上报用于词频学习（score + 1）
+     * 联想接口
      */
-    void select(String wordId);
+    List<ImeCandidateDTO>  select(String latin);
 }
 
 

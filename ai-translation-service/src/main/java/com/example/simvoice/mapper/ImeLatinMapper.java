@@ -1,19 +1,11 @@
 package com.example.simvoice.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.example.simvoice.entity.ShareRecord;
+import com.example.simvoice.entity.ImeLatin;
 import org.apache.ibatis.annotations.Mapper;
 
 @Mapper
-public interface ShareRecordMapper extends BaseMapper<ShareRecord> {
+public interface ImeLatinMapper extends BaseMapper<ImeLatin> {
 }
-
-
-
-
-
-
-
-
 
 

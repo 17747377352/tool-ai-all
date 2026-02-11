@@ -21,24 +21,20 @@ public class ImeController {
 
     /**
      * 获取候选词
-     * GET /ime/candidates?latin=xxx&limit=9
+     * GET /ime/candidates?latin=xxx
      */
     @GetMapping("/candidates")
-    public Result<List<ImeCandidateDTO>> candidates(@RequestParam String latin,
-                                                    @RequestParam(defaultValue = "9") int limit) {
-        return Result.success(imeService.candidates(latin, limit));
+    public Result<List<ImeCandidateDTO>> candidates(@RequestParam String latin) {
+        return Result.success(imeService.candidates(latin));
     }
 
     /**
-     * 上报用户选择（词频学习）
-     * POST /ime/select { "wordId": "..." }
+     * 联想接口
+     * POST /ime/imagine?latin=xxx
      */
-    @PostMapping("/select")
-    public Result<Void> select(@RequestBody ImeSelectDTO dto) {
-        if (dto != null) {
-            imeService.select(dto.getWordId());
-        }
-        return Result.success();
+    @GetMapping("/imagine")
+    public Result select(@RequestParam String latin) {
+        return Result.success(imeService.select(latin));
     }
 }
 
