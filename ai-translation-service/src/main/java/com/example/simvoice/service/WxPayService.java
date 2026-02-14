@@ -34,3 +34,5 @@ public interface WxPayService {
     Map<String, Object> queryOrder(String outTradeNo);
 }
 
+
+

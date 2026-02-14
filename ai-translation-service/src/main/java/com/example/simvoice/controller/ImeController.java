@@ -21,20 +21,20 @@ public class ImeController {
 
     /**
      * 获取候选词
-     * GET /ime/candidates?latin=xxx
+     * GET /ime/candidates?latin=xxx&limit=9
      */
     @GetMapping("/candidates")
-    public Result<List<ImeCandidateDTO>> candidates(@RequestParam String latin) {
-        return Result.success(imeService.candidates(latin));
+    public Result<List<ImeCandidateDTO>> candidates(@RequestParam String latin,@RequestParam Integer limit) {
+            return Result.success(imeService.candidates(latin, limit));
     }
 
     /**
      * 联想接口
-     * POST /ime/imagine?latin=xxx
+     * GET /ime/imagine?ids=1:N&limit=9
      */
     @GetMapping("/imagine")
-    public Result select(@RequestParam String latin) {
-        return Result.success(imeService.select(latin));
+    public Result select(@RequestParam String ids,@RequestParam Integer limit) {
+        return Result.success(imeService.select(ids, limit));
     }
 }
 

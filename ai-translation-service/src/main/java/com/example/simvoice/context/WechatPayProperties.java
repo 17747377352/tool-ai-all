@@ -32,3 +32,5 @@ public class WechatPayProperties {
     private String baseUrl = "https://api.mch.weixin.qq.com";
 }
 
+
+

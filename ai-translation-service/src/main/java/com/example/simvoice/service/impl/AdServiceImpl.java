@@ -13,7 +13,7 @@ import java.util.Map;
 /**
  * 广告服务实现类
  * 实现广告观看记录和奖励功能
- * 
+ *
  * @author ai-translation-service
  * @since 1.0
  */
@@ -37,10 +37,10 @@ public class AdServiceImpl implements AdService {
 
         // 增加额度
         int newQuota = userQuotaService.addQuota(openid, type, rewardCount);
-        
+
         // 获取剩余额度
         int remainingQuota = userQuotaService.getRemainingQuota(openid, type);
-        
+
         // 功能名称
         String typeName = getTypeName(type);
 
@@ -55,7 +55,7 @@ public class AdServiceImpl implements AdService {
 
         return result;
     }
-    
+
     /**
      * 获取功能类型名称
      */
